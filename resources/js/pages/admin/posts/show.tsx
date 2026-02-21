@@ -1,6 +1,14 @@
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import Highlight from '@tiptap/extension-highlight';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import Underline from '@tiptap/extension-underline';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import {
     ArrowLeft,
+    Bold,
     Calendar,
     Clock,
     CornerDownRight,
@@ -9,21 +17,32 @@ import {
     EyeOff,
     FileIcon,
     FileText,
-    Heart,
+    Heading2,
+    Heading3,
+    Highlighter,
     ImageIcon,
+    ImagePlus,
+    Italic,
+    Link as LinkIcon,
+    List,
+    ListOrdered,
+    Loader2,
     MessageCircle,
     MoreHorizontal,
     Paperclip,
     Pencil,
+    Quote,
     Reply,
     Send,
     Share2,
+    Strikethrough,
     ThumbsUp,
     Trash2,
     TrendingUp,
+    UnderlineIcon,
     Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,7 +55,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -49,120 +67,44 @@ const breadcrumbs: BreadcrumbItem[] = [
 type Attachment = {
     id: number;
     file_name: string;
-    file_type: 'image' | 'pdf' | 'doc';
-    file_size: string;
+    file_type: string;
+    file_size: number;
     file_path: string;
 };
 
 type CommentType = {
     id: number;
-    user: { name: string; initials: string; specialization: string | null };
+    user: { id: number; name: string; specialization: string | null };
     content: string;
     created_at: string;
-    likes: number;
     attachments: Attachment[];
     replies: CommentType[];
 };
 
-const dummyPost = {
-    id: 1,
-    title: 'Penanganan Awal Demam pada Anak di Bawah 5 Tahun',
-    content: `Demam merupakan salah satu keluhan paling umum yang sering dijumpai pada praktik klinis sehari-hari, terutama pada pasien anak di bawah 5 tahun. Sebagai dokter, kita perlu memberikan edukasi yang tepat kepada orang tua mengenai langkah-langkah penanganan awal yang bisa dilakukan di rumah.
-
-**Definisi Demam**
-Demam didefinisikan sebagai peningkatan suhu tubuh di atas 38°C yang diukur secara rektal, atau di atas 37.5°C jika diukur secara aksila. Penting untuk diingat bahwa demam sendiri merupakan mekanisme pertahanan tubuh terhadap infeksi.
-
-**Langkah Penanganan Awal**
-
-1. **Pemberian Antipiretik**: Parasetamol (10-15 mg/kgBB/kali) merupakan pilihan pertama. Ibuprofen (5-10 mg/kgBB/kali) dapat diberikan sebagai alternatif untuk anak di atas 6 bulan.
-
-2. **Kompres Hangat**: Gunakan air hangat (bukan air dingin) untuk kompres di daerah lipatan tubuh seperti aksila dan inguinal.
-
-3. **Hidrasi yang Cukup**: Pastikan anak mendapatkan asupan cairan yang cukup. ASI, air putih, atau larutan rehidrasi oral dapat diberikan.
-
-4. **Monitoring**: Pantau suhu tubuh setiap 4-6 jam dan perhatikan tanda-tanda bahaya.
-
-**Tanda Bahaya yang Perlu Dirujuk**
-- Usia di bawah 3 bulan dengan suhu ≥ 38°C
-- Kejang demam
-- Penurunan kesadaran
-- Dehidrasi berat
-- Demam > 5 hari tanpa perbaikan
-
-Saya mengundang rekan-rekan sejawat untuk berbagi pengalaman dan protokol yang digunakan di tempat praktik masing-masing.`,
-    views: 1240,
-    is_hidden: false,
-    created_at: '21 Februari 2026, 10:30 WIB',
+type PostData = {
+    id: number;
+    title: string;
+    content: string;
+    views: number;
+    is_hidden: boolean;
+    created_at: string;
+    comments_count: number;
     user: {
-        name: 'Dr. Andi Pratama',
-        initials: 'AP',
-        specialization: 'Pediatri',
-        bio: 'Dokter spesialis anak dengan pengalaman 12 tahun di RS Jakarta.',
-        posts_count: 34,
-        comments_count: 128,
-    },
-    category: { name: 'Pediatri', slug: 'pediatri' },
-    attachments: [
-        { id: 1, file_name: 'guideline-demam-anak.pdf', file_type: 'pdf' as const, file_size: '2.4 MB', file_path: '#' },
-        { id: 2, file_name: 'tabel-dosis-antipiretik.png', file_type: 'image' as const, file_size: '540 KB', file_path: 'https://placehold.co/800x450/1548d7/ffffff?text=Tabel+Dosis+Antipiretik' },
-    ],
-    comments_count: 5,
-    likes: 47,
-    shares: 12,
+        id: number;
+        name: string;
+        specialization: string | null;
+        bio: string | null;
+        posts_count: number;
+        comments_count: number;
+    };
+    category: { id: number; name: string; slug: string };
+    attachments: Attachment[];
+    comments: CommentType[];
 };
 
-const dummyComments: CommentType[] = [
-    {
-        id: 1,
-        user: { name: 'Dr. Siti Nurhaliza', initials: 'SN', specialization: 'Kardiologi' },
-        content: 'Terima kasih atas sharing yang sangat bermanfaat, Dok. Di tempat praktik saya, kami juga menambahkan protokol assessment menggunakan Yale Observation Scale untuk menilai risiko infeksi serius pada anak demam. Hasilnya cukup membantu dalam menentukan apakah pasien perlu rawat inap atau bisa rawat jalan.',
-        created_at: '21 Feb 2026, 11:15',
-        likes: 12,
-        attachments: [],
-        replies: [
-            {
-                id: 4,
-                user: { name: 'Dr. Andi Pratama', initials: 'AP', specialization: 'Pediatri' },
-                content: 'Benar sekali, Dr. Siti. Yale Observation Scale memang sangat membantu. Kami juga menggunakannya di RS kami. Apakah di tempat praktik Anda digunakan juga Rochester Criteria untuk neonatus?',
-                created_at: '21 Feb 2026, 11:45',
-                likes: 5,
-                attachments: [],
-                replies: [],
-            },
-            {
-                id: 5,
-                user: { name: 'Dr. Siti Nurhaliza', initials: 'SN', specialization: 'Kardiologi' },
-                content: 'Ya, untuk neonatus kami menggunakan Rochester Criteria dikombinasikan dengan pemeriksaan lab dasar. Saya lampirkan flowchart yang kami gunakan.',
-                created_at: '21 Feb 2026, 12:00',
-                likes: 8,
-                attachments: [
-                    { id: 3, file_name: 'flowchart-neonatus-demam.png', file_type: 'image' as const, file_size: '320 KB', file_path: 'https://placehold.co/800x450/1548d7/ffffff?text=Flowchart+Neonatus+Demam' },
-                ],
-                replies: [],
-            },
-        ],
-    },
-    {
-        id: 2,
-        user: { name: 'Dr. Budi Santoso', initials: 'BS', specialization: 'Endokrinologi' },
-        content: 'Pertanyaan yang menarik diangkat. Bagaimana pendapat rekan-rekan mengenai penggunaan kombinasi parasetamol dan ibuprofen secara bergantian? Beberapa literatur terbaru menunjukkan bahwa strategi ini lebih efektif untuk mengontrol demam, namun ada juga kekhawatiran mengenai potensi efek samping terutama pada fungsi ginjal.',
-        created_at: '21 Feb 2026, 13:00',
-        likes: 15,
-        attachments: [
-            { id: 4, file_name: 'meta-analysis-antipyretics-2025.pdf', file_type: 'pdf' as const, file_size: '1.8 MB', file_path: '#' },
-        ],
-        replies: [],
-    },
-    {
-        id: 3,
-        user: { name: 'Dr. Rina Wulandari', initials: 'RW', specialization: 'Neurologi' },
-        content: 'Dari sudut pandang neurologi, saya ingin menambahkan beberapa poin penting terkait kejang demam. Sekitar 2-5% anak usia 6 bulan - 5 tahun dapat mengalami kejang demam. Edukasi kepada orang tua mengenai pertolongan pertama saat kejang sangat krusial.',
-        created_at: '21 Feb 2026, 14:30',
-        likes: 22,
-        attachments: [],
-        replies: [],
-    },
-];
+type PageProps = {
+    post: PostData;
+};
 
 const BRAND = {
     bg: 'bg-[#1548d7]',
@@ -173,6 +115,43 @@ const BRAND = {
     darkBgLight: 'dark:bg-[#1548d7]/20',
 };
 
+function getInitials(name: string): string {
+    return name
+        .split(' ')
+        .filter((_, i) => i < 2)
+        .map((w) => w[0])
+        .join('')
+        .toUpperCase();
+}
+
+function formatFileSize(bytes: number): string {
+    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
+    if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${bytes} B`;
+}
+
+function formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }) + ' WIB';
+}
+
+function formatShortDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
+
 function AttachmentFileIcon({ type }: { type: string }) {
     if (type === 'image') return <ImageIcon className="h-4 w-4" />;
     if (type === 'pdf') return <FileText className="h-4 w-4" />;
@@ -181,29 +160,29 @@ function AttachmentFileIcon({ type }: { type: string }) {
 
 function AttachmentCard({ attachment }: { attachment: Attachment }) {
     const isImage = attachment.file_type === 'image';
+    const fileUrl = attachment.file_path.startsWith('http')
+        ? attachment.file_path
+        : `/storage/${attachment.file_path}`;
 
     if (isImage) {
         return (
             <div className="group/att relative overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:shadow-md">
                 <div className="relative aspect-video w-full bg-muted/30">
                     <img
-                        src={attachment.file_path}
+                        src={fileUrl}
                         alt={attachment.file_name}
                         className="h-full w-full object-cover"
                     />
-                    {/* Overlay on hover */}
                     <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent opacity-0 transition-opacity group-hover/att:opacity-100" />
                     <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-3 opacity-0 transition-opacity group-hover/att:opacity-100">
                         <div className="min-w-0">
                             <p className="truncate text-sm font-medium text-white">{attachment.file_name}</p>
-                            <p className="text-xs text-white/70">{attachment.file_size}</p>
+                            <p className="text-xs text-white/70">{formatFileSize(attachment.file_size)}</p>
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 shrink-0 text-white hover:bg-white/20"
-                        >
-                            <Download className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-white hover:bg-white/20" asChild>
+                            <a href={fileUrl} download>
+                                <Download className="h-4 w-4" />
+                            </a>
                         </Button>
                     </div>
                 </div>
@@ -218,29 +197,224 @@ function AttachmentCard({ attachment }: { attachment: Attachment }) {
             </div>
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{attachment.file_name}</p>
-                <p className="text-xs text-muted-foreground">{attachment.file_size}</p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(attachment.file_size)}</p>
             </div>
-            <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0 opacity-60 transition-opacity group-hover/att:opacity-100"
-            >
-                <Download className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 opacity-60 transition-opacity group-hover/att:opacity-100" asChild>
+                <a href={fileUrl} download>
+                    <Download className="h-4 w-4" />
+                </a>
             </Button>
         </div>
     );
 }
 
-function CommentItem({ comment, depth = 0 }: { comment: CommentType; depth?: number }) {
+/* ════════════════════════════════════════════════════════════
+   Mini Tiptap Toolbar — used in both comment box & reply box
+   ════════════════════════════════════════════════════════════ */
+
+function MiniToolbarButton({
+    onClick,
+    isActive = false,
+    title,
+    children,
+}: {
+    onClick: () => void;
+    isActive?: boolean;
+    title: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            title={title}
+            className={`inline-flex items-center justify-center rounded p-1 text-sm transition-colors ${isActive
+                ? 'bg-[#1548d7]/10 text-[#1548d7] dark:bg-[#1548d7]/20 dark:text-[#6b93f5]'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+        >
+            {children}
+        </button>
+    );
+}
+
+function CommentEditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
+
+    const handleImageUpload = useCallback(
+        async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (!file || !editor) return;
+
+            setUploading(true);
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+                const response = await fetch('/posts/upload-image', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: formData,
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (data.url) {
+                    editor.chain().focus().setImage({ src: data.url }).run();
+                }
+            } catch {
+                console.error('Image upload failed');
+            } finally {
+                setUploading(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            }
+        },
+        [editor],
+    );
+
+    const setLink = useCallback(() => {
+        if (!editor) return;
+        const previousUrl = editor.getAttributes('link').href;
+        const url = window.prompt('Masukkan URL:', previousUrl);
+        if (url === null) return;
+        if (url === '') {
+            editor.chain().focus().extendMarkRange('link').unsetLink().run();
+            return;
+        }
+        editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    }, [editor]);
+
+    if (!editor) return null;
+
+    return (
+        <div className="flex flex-wrap items-center gap-0.5 border-b bg-muted/20 dark:bg-muted/10 px-2 py-1.5">
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')} title="Bold">
+                <Bold className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive('italic')} title="Italic">
+                <Italic className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive('underline')} title="Underline">
+                <UnderlineIcon className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')} title="Strikethrough">
+                <Strikethrough className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleHighlight().run()} isActive={editor.isActive('highlight')} title="Highlight">
+                <Highlighter className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+
+            <Separator orientation="vertical" className="mx-1 h-5" />
+
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} isActive={editor.isActive('heading', { level: 2 })} title="Heading 2">
+                <Heading2 className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} isActive={editor.isActive('heading', { level: 3 })} title="Heading 3">
+                <Heading3 className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+
+            <Separator orientation="vertical" className="mx-1 h-5" />
+
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Bullet List">
+                <List className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')} title="Ordered List">
+                <ListOrdered className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+            <MiniToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} isActive={editor.isActive('blockquote')} title="Blockquote">
+                <Quote className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+
+            <Separator orientation="vertical" className="mx-1 h-5" />
+
+            <MiniToolbarButton onClick={setLink} isActive={editor.isActive('link')} title="Link">
+                <LinkIcon className="h-3.5 w-3.5" />
+            </MiniToolbarButton>
+            <MiniToolbarButton
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload Gambar"
+            >
+                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+            </MiniToolbarButton>
+
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+            />
+        </div>
+    );
+}
+
+function useCommentEditor(placeholder: string) {
+    return useEditor({
+        extensions: [
+            StarterKit.configure({ heading: { levels: [2, 3] } }),
+            Underline,
+            Highlight.configure({ multicolor: false }),
+            Link.configure({
+                openOnClick: false,
+                HTMLAttributes: { class: 'text-[#1548d7] dark:text-[#6b93f5] underline cursor-pointer' },
+            }),
+            Image.configure({
+                HTMLAttributes: { class: 'rounded-lg max-w-full mx-auto my-3 shadow-sm' },
+                allowBase64: false,
+            }),
+            Placeholder.configure({ placeholder }),
+        ],
+        editorProps: {
+            attributes: {
+                class: 'prose prose-sm prose-neutral dark:prose-invert max-w-none min-h-[100px] px-4 py-3 focus:outline-none text-sm leading-relaxed',
+            },
+        },
+    });
+}
+
+/* ═══════════════════════════════════
+   Comment Item (with reply support)
+   ═══════════════════════════════════ */
+
+function CommentItem({ comment, postId, depth = 0 }: { comment: CommentType; postId: number; depth?: number }) {
     const [replyOpen, setReplyOpen] = useState(false);
-    const [replyText, setReplyText] = useState('');
+    const [submittingReply, setSubmittingReply] = useState(false);
     const [liked, setLiked] = useState(false);
     const isNested = depth > 0;
+    const initials = getInitials(comment.user.name);
+
+    const replyEditor = useCommentEditor(`Balas ${comment.user.name}...`);
+
+    const handleSubmitReply = useCallback(() => {
+        if (!replyEditor) return;
+        const html = replyEditor.getHTML();
+        if (!html || html === '<p></p>') return;
+
+        setSubmittingReply(true);
+        router.post(
+            '/comments',
+            {
+                post_id: postId,
+                parent_id: comment.id,
+                content: html,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    replyEditor.commands.clearContent();
+                    setReplyOpen(false);
+                },
+                onFinish: () => setSubmittingReply(false),
+            },
+        );
+    }, [replyEditor, postId, comment.id]);
 
     return (
         <div className={isNested ? 'ml-5 md:ml-8' : ''}>
             <div className="group relative py-5">
-                {/* Connector line for nested */}
                 {isNested && (
                     <div className="absolute -left-5 md:-left-8 top-0 bottom-0 w-px bg-border dark:bg-border/50" />
                 )}
@@ -251,12 +425,11 @@ function CommentItem({ comment, depth = 0 }: { comment: CommentType; depth?: num
                 <div className="flex gap-3">
                     <Avatar className={`${isNested ? 'h-8 w-8' : 'h-10 w-10'} shrink-0 ring-2 ring-background shadow-sm`}>
                         <AvatarFallback className={`${BRAND.bg} text-white text-xs font-semibold`}>
-                            {comment.user.initials}
+                            {initials}
                         </AvatarFallback>
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
-                        {/* Comment bubble */}
                         <div className="rounded-2xl rounded-tl-sm bg-muted/50 dark:bg-muted/30 px-4 py-3 transition-colors hover:bg-muted/70 dark:hover:bg-muted/40">
                             <div className="flex items-center justify-between gap-2 mb-1.5">
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -270,7 +443,7 @@ function CommentItem({ comment, depth = 0 }: { comment: CommentType; depth?: num
                                             {comment.user.specialization}
                                         </Badge>
                                     )}
-                                    <span className="text-[11px] text-muted-foreground">{comment.created_at}</span>
+                                    <span className="text-[11px] text-muted-foreground">{formatShortDate(comment.created_at)}</span>
                                 </div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -296,10 +469,13 @@ function CommentItem({ comment, depth = 0 }: { comment: CommentType; depth?: num
                                 </DropdownMenu>
                             </div>
 
-                            <p className="text-sm leading-relaxed text-foreground/85">{comment.content}</p>
+                            {/* Render comment content as HTML from Tiptap */}
+                            <div
+                                className="prose prose-sm prose-neutral dark:prose-invert max-w-none text-sm leading-relaxed text-foreground/85"
+                                dangerouslySetInnerHTML={{ __html: comment.content }}
+                            />
 
-                            {/* Comment Attachments */}
-                            {comment.attachments.length > 0 && (
+                            {comment.attachments && comment.attachments.length > 0 && (
                                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                                     {comment.attachments.map((att) => (
                                         <AttachmentCard key={att.id} attachment={att} />
@@ -308,7 +484,6 @@ function CommentItem({ comment, depth = 0 }: { comment: CommentType; depth?: num
                             )}
                         </div>
 
-                        {/* Action bar */}
                         <div className="mt-1.5 flex items-center gap-0.5 px-1">
                             <Button
                                 variant="ghost"
@@ -317,7 +492,7 @@ function CommentItem({ comment, depth = 0 }: { comment: CommentType; depth?: num
                                 onClick={() => setLiked(!liked)}
                             >
                                 <ThumbsUp className={`h-3.5 w-3.5 ${liked ? 'fill-current' : ''}`} />
-                                {comment.likes + (liked ? 1 : 0)}
+                                {liked ? 1 : 0}
                             </Button>
                             <Button
                                 variant="ghost"
@@ -330,45 +505,40 @@ function CommentItem({ comment, depth = 0 }: { comment: CommentType; depth?: num
                             </Button>
                         </div>
 
-                        {/* Reply input */}
+                        {/* Reply Editor (Tiptap) */}
                         {replyOpen && (
                             <div className="mt-2 ml-1 flex gap-2.5 items-start">
                                 <CornerDownRight className="mt-3 h-4 w-4 text-muted-foreground shrink-0" />
                                 <div className="flex-1 space-y-2">
-                                    <div className="rounded-xl border bg-card shadow-sm p-3">
-                                        <Textarea
-                                            placeholder={`Balas ${comment.user.name}...`}
-                                            value={replyText}
-                                            onChange={(e) => setReplyText(e.target.value)}
-                                            className="min-h-[64px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 text-sm"
-                                        />
-                                        <Separator className="my-2" />
-                                        <div className="flex items-center justify-between">
-                                            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground">
-                                                <Paperclip className="mr-1 h-3.5 w-3.5" />
-                                                File
-                                            </Button>
-                                            <div className="flex gap-1.5">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-7 text-xs"
-                                                    onClick={() => {
-                                                        setReplyOpen(false);
-                                                        setReplyText('');
-                                                    }}
-                                                >
-                                                    Batal
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    className={`h-7 text-xs ${BRAND.bg} ${BRAND.bgHover} text-white`}
-                                                >
-                                                    <Send className="mr-1 h-3 w-3" />
-                                                    Kirim
-                                                </Button>
-                                            </div>
-                                        </div>
+                                    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                                        <CommentEditorToolbar editor={replyEditor} />
+                                        <EditorContent editor={replyEditor} />
+                                    </div>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 text-xs"
+                                            onClick={() => {
+                                                setReplyOpen(false);
+                                                replyEditor?.commands.clearContent();
+                                            }}
+                                        >
+                                            Batal
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            className={`h-7 text-xs ${BRAND.bg} ${BRAND.bgHover} text-white`}
+                                            onClick={handleSubmitReply}
+                                            disabled={submittingReply}
+                                        >
+                                            {submittingReply ? (
+                                                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                            ) : (
+                                                <Send className="mr-1 h-3 w-3" />
+                                            )}
+                                            Kirim
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
@@ -377,30 +547,59 @@ function CommentItem({ comment, depth = 0 }: { comment: CommentType; depth?: num
                 </div>
             </div>
 
-            {/* Nested Replies */}
-            {comment.replies.map((reply) => (
-                <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
+            {comment.replies && comment.replies.map((reply) => (
+                <CommentItem key={reply.id} comment={reply} postId={postId} depth={depth + 1} />
             ))}
         </div>
     );
 }
 
+/* ═══════════════════════════
+   Main PostShow Component
+   ═══════════════════════════ */
+
 export default function PostShow() {
-    const [commentText, setCommentText] = useState('');
+    const { post } = usePage<PageProps>().props;
+    const [submittingComment, setSubmittingComment] = useState(false);
+
+    const commentEditor = useCommentEditor('Bagikan pendapat atau pengalaman klinis Anda...');
+
+    const userInitials = getInitials(post.user.name);
+    const commentsCount = post.comments_count ?? 0;
+
+    const handleSubmitComment = useCallback(() => {
+        if (!commentEditor) return;
+        const html = commentEditor.getHTML();
+        if (!html || html === '<p></p>') return;
+
+        setSubmittingComment(true);
+        router.post(
+            '/comments',
+            {
+                post_id: post.id,
+                content: html,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    commentEditor.commands.clearContent();
+                },
+                onFinish: () => setSubmittingComment(false),
+            },
+        );
+    }, [commentEditor, post.id]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={dummyPost.title} />
+            <Head title={post.title} />
             <div className="flex flex-col gap-0 p-0">
                 {/* ═══════════════ Hero Header ═══════════════ */}
                 <div className="relative overflow-hidden bg-linear-to-br from-[#1548d7] via-[#1d5aef] to-[#3b6ef5]">
-                    {/* Decorative circles */}
                     <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/5" />
                     <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/5" />
-                    <div className="absolute top-1/2 left-1/3 h-32 w-32 rounded-full bg-white/[0.03]" />
+                    <div className="absolute top-1/2 left-1/3 h-32 w-32 rounded-full bg-white/3" />
 
                     <div className="relative mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
-                        {/* Back link */}
                         <Button
                             variant="ghost"
                             size="sm"
@@ -415,9 +614,9 @@ export default function PostShow() {
 
                         <div className="flex items-start gap-2 mb-3 flex-wrap">
                             <Badge className="bg-white/15 text-white border-white/20 text-xs backdrop-blur-sm">
-                                {dummyPost.category.name}
+                                {post.category.name}
                             </Badge>
-                            {dummyPost.is_hidden && (
+                            {post.is_hidden && (
                                 <Badge className="bg-red-500/30 text-white border-red-300/30 text-xs">
                                     <EyeOff className="mr-1 h-3 w-3" />
                                     Hidden
@@ -426,36 +625,36 @@ export default function PostShow() {
                         </div>
 
                         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white leading-snug mb-4 max-w-3xl">
-                            {dummyPost.title}
+                            {post.title}
                         </h1>
 
-                        {/* Author row */}
                         <div className="flex items-center gap-3 mb-5">
                             <Avatar className="h-10 w-10 ring-2 ring-white/30 shadow-lg">
                                 <AvatarFallback className="bg-white/20 text-white font-semibold text-sm backdrop-blur-sm">
-                                    {dummyPost.user.initials}
+                                    {userInitials}
                                 </AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="text-sm font-semibold text-white">{dummyPost.user.name}</p>
+                                <p className="text-sm font-semibold text-white">{post.user.name}</p>
                                 <div className="flex items-center gap-2 text-xs text-white/60">
-                                    <span>{dummyPost.user.specialization}</span>
-                                    <span>•</span>
+                                    {post.user.specialization && (
+                                        <>
+                                            <span>{post.user.specialization}</span>
+                                            <span>•</span>
+                                        </>
+                                    )}
                                     <span className="flex items-center gap-1">
                                         <Calendar className="h-3 w-3" />
-                                        {dummyPost.created_at}
+                                        {formatDate(post.created_at)}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Stat pills */}
                         <div className="flex items-center gap-2 flex-wrap">
                             {[
-                                { icon: Eye, label: `${dummyPost.views.toLocaleString('id-ID')} views` },
-                                { icon: MessageCircle, label: `${dummyPost.comments_count} komentar` },
-                                { icon: Heart, label: `${dummyPost.likes} suka` },
-                                { icon: Share2, label: `${dummyPost.shares} share` },
+                                { icon: Eye, label: `${post.views.toLocaleString('id-ID')} views` },
+                                { icon: MessageCircle, label: `${commentsCount} komentar` },
                             ].map((stat) => (
                                 <div
                                     key={stat.label}
@@ -474,10 +673,8 @@ export default function PostShow() {
                     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
                         {/* ──── Left Column ──── */}
                         <div className="flex flex-col gap-6 min-w-0">
-                            {/* Post Content */}
                             <Card className="border-0 shadow-lg overflow-hidden">
                                 <CardContent className="p-5 md:p-8">
-                                    {/* Action toolbar */}
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-2">
                                             <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
@@ -497,9 +694,11 @@ export default function PostShow() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="w-44">
-                                                <DropdownMenuItem>
-                                                    <Pencil className="mr-2 h-4 w-4" />
-                                                    Edit Diskusi
+                                                <DropdownMenuItem asChild>
+                                                    <a href={`/posts/${post.id}/edit`}>
+                                                        <Pencil className="mr-2 h-4 w-4" />
+                                                        Edit Diskusi
+                                                    </a>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem>
                                                     <EyeOff className="mr-2 h-4 w-4" />
@@ -516,22 +715,23 @@ export default function PostShow() {
 
                                     <Separator className="mb-6" />
 
-                                    {/* Article Body */}
-                                    <article className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.8] whitespace-pre-line text-[15px]">
-                                        {dummyPost.content}
-                                    </article>
+                                    {/* Article Body — renders HTML from Tiptap */}
+                                    <article
+                                        className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.8] text-[15px]"
+                                        dangerouslySetInnerHTML={{ __html: post.content }}
+                                    />
 
                                     {/* Attachments */}
-                                    {dummyPost.attachments.length > 0 && (
+                                    {post.attachments && post.attachments.length > 0 && (
                                         <div className="mt-8 pt-6 border-t">
                                             <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
                                                 <div className={`rounded-lg p-1.5 ${BRAND.bgLight} ${BRAND.darkBgLight}`}>
                                                     <Paperclip className={`h-4 w-4 ${BRAND.text} ${BRAND.darkText}`} />
                                                 </div>
-                                                Lampiran ({dummyPost.attachments.length})
+                                                Lampiran ({post.attachments.length})
                                             </h4>
                                             <div className="grid gap-3 sm:grid-cols-2">
-                                                {dummyPost.attachments.map((att) => (
+                                                {post.attachments.map((att) => (
                                                     <AttachmentCard key={att.id} attachment={att} />
                                                 ))}
                                             </div>
@@ -540,7 +740,7 @@ export default function PostShow() {
                                 </CardContent>
                             </Card>
 
-                            {/* Comment Input Card */}
+                            {/* Comment Input Card — Tiptap Editor */}
                             <Card className="border-0 shadow-lg overflow-hidden">
                                 <CardHeader className="pb-0 pt-5 px-5 md:px-8">
                                     <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -556,24 +756,23 @@ export default function PostShow() {
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1 space-y-3">
-                                            <div className="rounded-xl border bg-muted/20 dark:bg-muted/10 p-3 transition-colors focus-within:border-[#1548d7]/40 focus-within:shadow-sm">
-                                                <Textarea
-                                                    placeholder="Bagikan pendapat atau pengalaman klinis Anda..."
-                                                    value={commentText}
-                                                    onChange={(e) => setCommentText(e.target.value)}
-                                                    className="min-h-[80px] resize-none border-0 p-0 bg-transparent shadow-none focus-visible:ring-0 text-sm"
-                                                />
-                                                <Separator className="my-2.5" />
-                                                <div className="flex items-center justify-between">
-                                                    <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground gap-1.5">
-                                                        <Paperclip className="h-3.5 w-3.5" />
-                                                        Lampirkan File
-                                                    </Button>
-                                                    <Button className={`${BRAND.bg} ${BRAND.bgHover} text-white shadow-md text-xs h-8`}>
+                                            <div className="rounded-xl border bg-muted/20 dark:bg-muted/10 overflow-hidden transition-colors focus-within:border-[#1548d7]/40 focus-within:shadow-sm">
+                                                <CommentEditorToolbar editor={commentEditor} />
+                                                <EditorContent editor={commentEditor} />
+                                            </div>
+                                            <div className="flex items-center justify-end">
+                                                <Button
+                                                    className={`${BRAND.bg} ${BRAND.bgHover} text-white shadow-md text-xs h-8`}
+                                                    onClick={handleSubmitComment}
+                                                    disabled={submittingComment}
+                                                >
+                                                    {submittingComment ? (
+                                                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                                    ) : (
                                                         <Send className="mr-1.5 h-3.5 w-3.5" />
-                                                        Kirim Komentar
-                                                    </Button>
-                                                </div>
+                                                    )}
+                                                    {submittingComment ? 'Mengirim...' : 'Kirim Komentar'}
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>
@@ -590,7 +789,7 @@ export default function PostShow() {
                                             </div>
                                             Diskusi
                                             <span className={`text-sm font-normal ${BRAND.text} ${BRAND.darkText}`}>
-                                                ({dummyPost.comments_count})
+                                                ({commentsCount})
                                             </span>
                                         </h3>
                                         <Badge variant="outline" className="text-xs gap-1">
@@ -601,10 +800,10 @@ export default function PostShow() {
                                 </CardHeader>
 
                                 <CardContent className="px-5 md:px-8 pb-6">
-                                    {dummyComments.length > 0 ? (
+                                    {post.comments && post.comments.length > 0 ? (
                                         <div className="divide-y divide-border/60">
-                                            {dummyComments.map((comment) => (
-                                                <CommentItem key={comment.id} comment={comment} />
+                                            {post.comments.map((comment) => (
+                                                <CommentItem key={comment.id} comment={comment} postId={post.id} />
                                             ))}
                                         </div>
                                     ) : (
@@ -624,29 +823,32 @@ export default function PostShow() {
 
                         {/* ──── Right Sidebar ──── */}
                         <div className="flex flex-col gap-5">
-                            {/* Author Card */}
                             <Card className="border-0 shadow-lg overflow-hidden sticky top-6">
                                 <div className="h-16 bg-linear-to-r from-[#1548d7] to-[#3b6ef5]" />
                                 <CardContent className="pt-0 pb-5 px-5">
                                     <div className="-mt-8 mb-3">
                                         <Avatar className="h-14 w-14 ring-4 ring-background shadow-lg">
                                             <AvatarFallback className={`${BRAND.bg} text-white font-bold text-lg`}>
-                                                {dummyPost.user.initials}
+                                                {userInitials}
                                             </AvatarFallback>
                                         </Avatar>
                                     </div>
-                                    <h4 className="font-semibold">{dummyPost.user.name}</h4>
-                                    <Badge className={`${BRAND.bgLight} ${BRAND.text} ${BRAND.darkBgLight} ${BRAND.darkText} border-0 text-[11px] mt-1`}>
-                                        {dummyPost.user.specialization}
-                                    </Badge>
-                                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                                        {dummyPost.user.bio}
-                                    </p>
+                                    <h4 className="font-semibold">{post.user.name}</h4>
+                                    {post.user.specialization && (
+                                        <Badge className={`${BRAND.bgLight} ${BRAND.text} ${BRAND.darkBgLight} ${BRAND.darkText} border-0 text-[11px] mt-1`}>
+                                            {post.user.specialization}
+                                        </Badge>
+                                    )}
+                                    {post.user.bio && (
+                                        <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                                            {post.user.bio}
+                                        </p>
+                                    )}
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="rounded-lg bg-muted/40 dark:bg-muted/20 p-3 text-center">
                                             <p className={`text-lg font-bold ${BRAND.text} ${BRAND.darkText}`}>
-                                                {dummyPost.user.posts_count}
+                                                {post.user.posts_count ?? 0}
                                             </p>
                                             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
                                                 Diskusi
@@ -654,7 +856,7 @@ export default function PostShow() {
                                         </div>
                                         <div className="rounded-lg bg-muted/40 dark:bg-muted/20 p-3 text-center">
                                             <p className={`text-lg font-bold ${BRAND.text} ${BRAND.darkText}`}>
-                                                {dummyPost.user.comments_count}
+                                                {post.user.comments_count ?? 0}
                                             </p>
                                             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
                                                 Komentar
@@ -664,7 +866,6 @@ export default function PostShow() {
                                 </CardContent>
                             </Card>
 
-                            {/* Quick Stats */}
                             <Card className="border-0 shadow-lg">
                                 <CardHeader className="pb-2 px-5 pt-5">
                                     <h4 className="text-sm font-semibold flex items-center gap-2">
@@ -674,10 +875,9 @@ export default function PostShow() {
                                 </CardHeader>
                                 <CardContent className="px-5 pb-5 space-y-3">
                                     {[
-                                        { icon: Eye, label: 'Total Views', value: dummyPost.views.toLocaleString('id-ID'), color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-500/20' },
-                                        { icon: MessageCircle, label: 'Komentar', value: dummyPost.comments_count.toString(), color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20' },
-                                        { icon: Heart, label: 'Suka', value: dummyPost.likes.toString(), color: 'text-rose-600 dark:text-rose-400 bg-rose-500/10 dark:bg-rose-500/20' },
-                                        { icon: Users, label: 'Partisipan', value: '4', color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20' },
+                                        { icon: Eye, label: 'Total Views', value: post.views.toLocaleString('id-ID'), color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-500/20' },
+                                        { icon: MessageCircle, label: 'Komentar', value: commentsCount.toString(), color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20' },
+                                        { icon: Users, label: 'Partisipan', value: getUniqueParticipants(post.comments).toString(), color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20' },
                                     ].map((item) => (
                                         <div key={item.label} className="flex items-center justify-between">
                                             <div className="flex items-center gap-2.5">
@@ -695,6 +895,95 @@ export default function PostShow() {
                     </div>
                 </div>
             </div>
+
+            {/* Tiptap Styles for comment content and editors */}
+            <style>{`
+                .tiptap p.is-editor-empty:first-child::before {
+                    content: attr(data-placeholder);
+                    float: left;
+                    color: var(--muted-foreground);
+                    opacity: 0.4;
+                    pointer-events: none;
+                    height: 0;
+                }
+                .tiptap img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 0.5rem;
+                    margin: 0.75rem auto;
+                    display: block;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+                .tiptap img.ProseMirror-selectednode {
+                    outline: 2px solid #1548d7;
+                    outline-offset: 2px;
+                    border-radius: 0.5rem;
+                }
+                .tiptap blockquote {
+                    border-left: 3px solid #1548d7;
+                    padding-left: 1rem;
+                    font-style: italic;
+                    color: var(--muted-foreground);
+                }
+                .tiptap pre {
+                    background: var(--muted);
+                    border-radius: 0.5rem;
+                    padding: 1rem;
+                    font-family: monospace;
+                    overflow-x: auto;
+                }
+                .tiptap mark {
+                    background-color: #fef08a;
+                    border-radius: 0.125rem;
+                    padding: 0.125rem 0.25rem;
+                }
+                .dark .tiptap mark {
+                    background-color: #854d0e;
+                    color: #fef9c3;
+                }
+                .tiptap hr {
+                    border: none;
+                    border-top: 2px solid var(--border);
+                    margin: 1.5rem 0;
+                }
+                .tiptap a {
+                    color: #1548d7;
+                    text-decoration: underline;
+                    cursor: pointer;
+                }
+                .dark .tiptap a {
+                    color: #6b93f5;
+                }
+                .tiptap ul, .tiptap ol {
+                    padding-left: 1.5rem;
+                }
+                .tiptap h2 {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    line-height: 1.3;
+                    margin-top: 1.25rem;
+                    margin-bottom: 0.5rem;
+                }
+                .tiptap h3 {
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    line-height: 1.4;
+                    margin-top: 1rem;
+                    margin-bottom: 0.5rem;
+                }
+            `}</style>
         </AppLayout>
     );
+}
+
+function getUniqueParticipants(comments: CommentType[]): number {
+    const ids = new Set<number>();
+    function collect(list: CommentType[]) {
+        for (const c of list) {
+            ids.add(c.user.id);
+            if (c.replies) collect(c.replies);
+        }
+    }
+    collect(comments ?? []);
+    return ids.size;
 }

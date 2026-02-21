@@ -1,20 +1,28 @@
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
+    ArrowRight,
     Calendar,
+    ChevronLeft,
+    ChevronRight,
     Eye,
     EyeOff,
     Filter,
+    Flame,
     MessageCircle,
     MoreHorizontal,
     Pencil,
+    Plus,
     Search,
+    SortAsc,
+    Sparkles,
     Trash2,
+    TrendingUp,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,12 +38,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Posts', href: '/admin/posts' },
+    { title: 'Posts', href: '/posts' },
 ];
 
 type Post = {
@@ -45,337 +54,487 @@ type Post = {
     views: number;
     is_hidden: boolean;
     created_at: string;
-    user: { name: string; initials: string };
-    category: { name: string; slug: string };
+    user: { id: number; name: string };
+    category: { id: number; name: string; slug: string };
     comments_count: number;
 };
 
-const dummyPosts: Post[] = [
-    {
-        id: 1,
-        title: 'Penanganan Awal Demam pada Anak di Bawah 5 Tahun',
-        content: 'Demam merupakan salah satu keluhan paling umum pada anak. Orang tua perlu mengetahui langkah awal penanganan demam sebelum membawa anak ke dokter. Pemberian obat penurun panas yang tepat sangat penting...',
-        views: 1240,
-        is_hidden: false,
-        created_at: '2026-02-21',
-        user: { name: 'Dr. Andi Pratama', initials: 'AP' },
-        category: { name: 'Pediatri', slug: 'pediatri' },
-        comments_count: 24,
-    },
-    {
-        id: 2,
-        title: 'Manajemen Hipertensi pada Pasien Geriatri',
-        content: 'Hipertensi pada pasien lanjut usia memerlukan pendekatan yang berbeda. Target tekanan darah dan pemilihan obat anti-hipertensi harus disesuaikan dengan kondisi komorbid dan risiko efek samping...',
-        views: 890,
-        is_hidden: false,
-        created_at: '2026-02-20',
-        user: { name: 'Dr. Siti Nurhaliza', initials: 'SN' },
-        category: { name: 'Kardiologi', slug: 'kardiologi' },
-        comments_count: 18,
-    },
-    {
-        id: 3,
-        title: 'Tatalaksana Terbaru Diabetes Melitus Tipe 2',
-        content: 'Perkembangan terbaru dalam penatalaksanaan DM tipe 2 mencakup penggunaan inhibitor SGLT2 dan agonis GLP-1 yang menunjukkan manfaat kardiovaskular dan renal selain efek penurunan glukosa...',
-        views: 2150,
-        is_hidden: false,
-        created_at: '2026-02-19',
-        user: { name: 'Dr. Budi Santoso', initials: 'BS' },
-        category: { name: 'Endokrinologi', slug: 'endokrinologi' },
-        comments_count: 35,
-    },
-    {
-        id: 4,
-        title: 'Diagnosis Banding Nyeri Dada di IGD',
-        content: 'Nyeri dada merupakan keluhan yang sering dijumpai di IGD dan memerlukan evaluasi cepat dan tepat. Dokter perlu membedakan antara sindrom koroner akut, diseksi aorta, emboli paru, dan penyebab lainnya...',
-        views: 3420,
-        is_hidden: false,
-        created_at: '2026-02-18',
-        user: { name: 'Dr. Rina Wulandari', initials: 'RW' },
-        category: { name: 'Kardiologi', slug: 'kardiologi' },
-        comments_count: 42,
-    },
-    {
-        id: 5,
-        title: 'Terapi Antibiotik Empiris pada Infeksi Saluran Kemih',
-        content: 'Pemilihan antibiotik empiris pada ISK harus mempertimbangkan pola resistensi lokal. Panduan terbaru merekomendasikan penggunaan nitrofurantoin atau fosfomycin sebagai lini pertama ISK tanpa komplikasi...',
-        views: 760,
-        is_hidden: true,
-        created_at: '2026-02-17',
-        user: { name: 'Dr. Hendra Wijaya', initials: 'HW' },
-        category: { name: 'Urologi', slug: 'urologi' },
-        comments_count: 12,
-    },
-    {
-        id: 6,
-        title: 'Pendekatan Multidisiplin dalam Penanganan Stroke Akut',
-        content: 'Penanganan stroke akut memerlukan kerjasama tim yang terkoordinasi antara dokter jaga IGD, neurolog, radiolog, dan perawat terlatih. Golden period dalam penanganan stroke iskemik adalah...',
-        views: 1890,
-        is_hidden: false,
-        created_at: '2026-02-16',
-        user: { name: 'Dr. Maya Sari', initials: 'MS' },
-        category: { name: 'Neurologi', slug: 'neurologi' },
-        comments_count: 29,
-    },
-    {
-        id: 7,
-        title: 'Vaksinasi COVID-19 Booster: Update Rekomendasi Terkini',
-        content: 'WHO dan IDAI telah mengeluarkan rekomendasi terbaru mengenai vaksinasi booster COVID-19. Kelompok prioritas dan interval pemberian booster perlu disesuaikan dengan perkembangan varian virus...',
-        views: 4560,
-        is_hidden: false,
-        created_at: '2026-02-15',
-        user: { name: 'Dr. Ahmad Fauzi', initials: 'AF' },
-        category: { name: 'Imunologi', slug: 'imunologi' },
-        comments_count: 67,
-    },
-    {
-        id: 8,
-        title: 'Penanganan Luka Bakar Derajat II dan III',
-        content: 'Luka bakar derajat II dan III memerlukan penanganan khusus untuk mencegah infeksi dan mempercepat penyembuhan. Debridement yang tepat dan pemilihan dressing modern sangat berpengaruh...',
-        views: 530,
-        is_hidden: true,
-        created_at: '2026-02-14',
-        user: { name: 'Dr. Lisa Permata', initials: 'LP' },
-        category: { name: 'Bedah', slug: 'bedah' },
-        comments_count: 8,
-    },
-];
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
 
-const categories = ['Semua', 'Pediatri', 'Kardiologi', 'Endokrinologi', 'Urologi', 'Neurologi', 'Imunologi', 'Bedah'];
+type PaginatedPosts = {
+    data: Post[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: PaginationLink[];
+};
+
+type Category = {
+    id: number;
+    name: string;
+    slug: string;
+};
+
+type Filters = {
+    search: string;
+    category: string;
+    status: string;
+    sort: string;
+    per_page: number;
+};
+
+type PageProps = {
+    posts: PaginatedPosts;
+    categories: Category[];
+    filters: Filters;
+};
+
+const CATEGORY_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
+    Pediatri: { bg: 'bg-sky-500/10 dark:bg-sky-500/20', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-500' },
+    Kardiologi: { bg: 'bg-rose-500/10 dark:bg-rose-500/20', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-500' },
+    Endokrinologi: { bg: 'bg-amber-500/10 dark:bg-amber-500/20', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-500' },
+    Urologi: { bg: 'bg-purple-500/10 dark:bg-purple-500/20', text: 'text-purple-700 dark:text-purple-300', dot: 'bg-purple-500' },
+    Neurologi: { bg: 'bg-emerald-500/10 dark:bg-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-500' },
+    Imunologi: { bg: 'bg-orange-500/10 dark:bg-orange-500/20', text: 'text-orange-700 dark:text-orange-300', dot: 'bg-orange-500' },
+    Bedah: { bg: 'bg-teal-500/10 dark:bg-teal-500/20', text: 'text-teal-700 dark:text-teal-300', dot: 'bg-teal-500' },
+};
+
+const DEFAULT_CAT_COLOR = { bg: 'bg-[#1548d7]/10 dark:bg-[#1548d7]/20', text: 'text-[#1548d7] dark:text-[#6b93f5]', dot: 'bg-[#1548d7]' };
+
+function getInitials(name: string): string {
+    return name
+        .split(' ')
+        .filter((_, i) => i < 2)
+        .map((w) => w[0])
+        .join('')
+        .toUpperCase();
+}
 
 function formatViews(views: number): string {
     if (views >= 1000) return `${(views / 1000).toFixed(1)}k`;
     return views.toString();
 }
 
+function formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function stripHtml(html: string): string {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+}
+
+function getCatColor(name: string) {
+    return CATEGORY_COLORS[name] ?? DEFAULT_CAT_COLOR;
+}
+
 const BRAND = {
     bg: 'bg-[#1548d7]',
-    bgHover: 'hover:bg-[#1237b0]',
     text: 'text-[#1548d7]',
-    border: 'border-[#1548d7]',
-    ring: 'ring-[#1548d7]/20',
     bgLight: 'bg-[#1548d7]/10',
     darkText: 'dark:text-[#6b93f5]',
     darkBgLight: 'dark:bg-[#1548d7]/20',
 };
 
-export default function PostsIndex() {
-    const [search, setSearch] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('Semua');
-    const [statusFilter, setStatusFilter] = useState('all');
+function PostCard({ post }: { post: Post }) {
+    const catColor = getCatColor(post.category.name);
+    const isTrending = post.views > 2000;
+    const initials = getInitials(post.user.name);
+    const contentPreview = stripHtml(post.content);
 
-    const filteredPosts = dummyPosts.filter((post) => {
-        const matchesSearch =
-            post.title.toLowerCase().includes(search.toLowerCase()) ||
-            post.user.name.toLowerCase().includes(search.toLowerCase());
-        const matchesCategory = selectedCategory === 'Semua' || post.category.name === selectedCategory;
-        const matchesStatus =
-            statusFilter === 'all' ||
-            (statusFilter === 'active' && !post.is_hidden) ||
-            (statusFilter === 'hidden' && post.is_hidden);
-        return matchesSearch && matchesCategory && matchesStatus;
-    });
+    return (
+        <Card
+            className={`group relative overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${post.is_hidden ? 'opacity-60' : ''}`}
+        >
+            <div className={`h-1 bg-linear-to-r ${post.is_hidden
+                    ? 'from-gray-400 to-gray-300 dark:from-gray-600 dark:to-gray-500'
+                    : 'from-[#1548d7] to-[#3b6ef5]'
+                }`} />
+
+            <CardContent className="p-5">
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <Badge className={`${catColor.bg} ${catColor.text} border-0 text-[11px] font-medium gap-1`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${catColor.dot}`} />
+                            {post.category.name}
+                        </Badge>
+                        {post.is_hidden && (
+                            <Badge variant="destructive" className="text-[11px] gap-1">
+                                <EyeOff className="h-3 w-3" />
+                                Hidden
+                            </Badge>
+                        )}
+                        {isTrending && !post.is_hidden && (
+                            <Badge className="bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 border-0 text-[11px] gap-1">
+                                <Flame className="h-3 w-3" />
+                                Trending
+                            </Badge>
+                        )}
+                    </div>
+
+                    <h3 className="font-bold leading-snug mb-2 text-base line-clamp-2 transition-colors group-hover:text-[#1548d7] dark:group-hover:text-[#6b93f5]">
+                        {post.title}
+                    </h3>
+
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2">
+                        {contentPreview}
+                    </p>
+
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                            <Eye className="h-3.5 w-3.5" />
+                            <span className="font-medium">{formatViews(post.views)}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            <span className="font-medium">{post.comments_count}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            <span>{formatDate(post.created_at)}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+                    <div className="flex items-center gap-2.5">
+                        <Avatar className="h-8 w-8 ring-2 ring-background shadow-sm">
+                            <AvatarFallback className={`${BRAND.bg} text-white text-[10px] font-semibold`}>
+                                {initials}
+                            </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium truncate max-w-[140px]">{post.user.name}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-8 px-3 text-xs ${BRAND.text} ${BRAND.darkText} gap-1 opacity-0 group-hover:opacity-100 transition-opacity`}
+                            asChild
+                        >
+                            <a href={`/posts/${post.id}`}>
+                                Detail
+                                <ArrowRight className="h-3.5 w-3.5" />
+                            </a>
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuItem asChild>
+                                    <a href={`/posts/${post.id}`}>
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        Lihat Detail
+                                    </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    {post.is_hidden ? (
+                                        <>
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            Tampilkan
+                                        </>
+                                    ) : (
+                                        <>
+                                            <EyeOff className="mr-2 h-4 w-4" />
+                                            Sembunyikan
+                                        </>
+                                    )}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Hapus
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function PostsIndex() {
+    const { posts, categories, filters } = usePage<PageProps>().props;
+    const [search, setSearch] = useState(filters.search);
+
+    const applyFilters = useCallback(
+        (newFilters: Partial<Filters>) => {
+            const params: Record<string, string> = {};
+
+            const merged = { ...filters, ...newFilters };
+
+            if (merged.search) params.search = merged.search;
+            if (merged.category) params.category = merged.category;
+            if (merged.status) params.status = merged.status;
+            if (merged.sort && merged.sort !== 'latest') params.sort = merged.sort;
+            if (merged.per_page && merged.per_page !== 12) params.per_page = String(merged.per_page);
+
+            router.get('/posts', params, { preserveState: true, preserveScroll: true });
+        },
+        [filters],
+    );
+
+    const handleSearch = useCallback(() => {
+        applyFilters({ search });
+    }, [search, applyFilters]);
+
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter') handleSearch();
+        },
+        [handleSearch],
+    );
+
+    const goToPage = useCallback(
+        (url: string | null) => {
+            if (url) router.get(url, {}, { preserveState: true, preserveScroll: true });
+        },
+        [],
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Kelola Diskusi" />
-            <div className="flex flex-col gap-6 p-4 md:p-6">
-                {/* Page Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Kelola Diskusi</h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            {filteredPosts.length} dari {dummyPosts.length} diskusi ditampilkan
-                        </p>
+            <div className="flex flex-col gap-0">
+                {/* ═══════════════ Hero Header ═══════════════ */}
+                <div className="relative overflow-hidden bg-linear-to-br from-[#1548d7] via-[#1d5aef] to-[#3b6ef5]">
+                    <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-white/5" />
+                    <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-white/5" />
+                    <div className="absolute top-1/2 left-1/2 h-28 w-28 rounded-full bg-white/3" />
+
+                    <div className="relative mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
+                        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="rounded-lg bg-white/15 backdrop-blur-sm p-2">
+                                        <Sparkles className="h-5 w-5 text-white" />
+                                    </div>
+                                    <h1 className="text-xl md:text-2xl font-bold text-white">Kelola Diskusi</h1>
+                                </div>
+                                <p className="text-sm text-white/60">
+                                    Kelola semua diskusi forum dokter di satu tempat
+                                </p>
+                            </div>
+                            <Button
+                                className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm shadow-lg"
+                                asChild
+                            >
+                                <a href="/posts/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Buat Diskusi Baru
+                                </a>
+                            </Button>
+                        </div>
+
+                        {/* Stat Pills */}
+                        <div className="flex items-center gap-3 mt-6 flex-wrap">
+                            {[
+                                { label: `${posts.total} Total`, icon: Sparkles },
+                                { label: `Halaman ${posts.current_page}/${posts.last_page}`, icon: Filter },
+                            ].map((stat) => (
+                                <div
+                                    key={stat.label}
+                                    className="flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-sm px-3 py-1.5 text-xs text-white/80 font-medium"
+                                >
+                                    <stat.icon className="h-3.5 w-3.5" />
+                                    {stat.label}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <Button className={`${BRAND.bg} ${BRAND.bgHover} text-white shadow-md`}>
-                        + Buat Diskusi Baru
-                    </Button>
                 </div>
 
-                {/* Filters Bar */}
-                <Card className="border-0 shadow-sm">
-                    <CardContent className="py-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                            {/* Search */}
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Cari judul atau penulis..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-9 focus-visible:ring-[#1548d7]/30"
-                                />
+                {/* ═══════════════ Content Area ═══════════════ */}
+                <div className="mx-auto w-full max-w-7xl px-4 md:px-6 py-6 flex flex-col gap-6">
+                    {/* Filters Bar */}
+                    <Card className="border-0 shadow-lg overflow-hidden">
+                        <CardContent className="py-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Cari judul atau penulis..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        className="pl-9 focus-visible:ring-[#1548d7]/30"
+                                    />
+                                </div>
+                                <Separator orientation="vertical" className="hidden sm:block h-8" />
+                                <Select
+                                    value={filters.category || '_all'}
+                                    onValueChange={(val) => applyFilters({ category: val === '_all' ? '' : val })}
+                                >
+                                    <SelectTrigger className="w-full sm:w-44">
+                                        <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+                                        <SelectValue placeholder="Kategori" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="_all">Semua Kategori</SelectItem>
+                                        {categories.map((cat) => (
+                                            <SelectItem key={cat.id} value={String(cat.id)}>
+                                                {cat.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Select
+                                    value={filters.status || 'all'}
+                                    onValueChange={(val) => applyFilters({ status: val === 'all' ? '' : val })}
+                                >
+                                    <SelectTrigger className="w-full sm:w-40">
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Semua Status</SelectItem>
+                                        <SelectItem value="active">Aktif</SelectItem>
+                                        <SelectItem value="hidden">Tersembunyi</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Select
+                                    value={filters.sort}
+                                    onValueChange={(val) => applyFilters({ sort: val })}
+                                >
+                                    <SelectTrigger className="w-full sm:w-44">
+                                        <SortAsc className="mr-2 h-4 w-4 text-muted-foreground" />
+                                        <SelectValue placeholder="Urutkan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="latest">Terbaru</SelectItem>
+                                        <SelectItem value="oldest">Terlama</SelectItem>
+                                        <SelectItem value="most_viewed">Views Terbanyak</SelectItem>
+                                        <SelectItem value="most_commented">Komentar Terbanyak</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
-
-                            {/* Category Filter */}
-                            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                <SelectTrigger className="w-full sm:w-44">
-                                    <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-                                    <SelectValue placeholder="Kategori" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {categories.map((cat) => (
-                                        <SelectItem key={cat} value={cat}>
-                                            {cat}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-
-                            {/* Status Filter */}
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-full sm:w-40">
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Semua Status</SelectItem>
-                                    <SelectItem value="active">Aktif</SelectItem>
-                                    <SelectItem value="hidden">Tersembunyi</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Posts Grid */}
-                {filteredPosts.length > 0 ? (
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        {filteredPosts.map((post) => (
-                            <Card
-                                key={post.id}
-                                className={`group relative overflow-hidden border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${post.is_hidden ? 'opacity-70' : ''
-                                    }`}
-                            >
-                                {/* Color accent top line */}
-                                <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#1548d7] to-[#3b6ef5] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                            <Avatar className="h-9 w-9 shrink-0 ring-2 ring-background shadow-sm">
-                                                <AvatarFallback
-                                                    className={`${BRAND.bg} text-white text-xs font-semibold`}
-                                                >
-                                                    {post.user.initials}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="min-w-0">
-                                                <p className="text-sm font-medium truncate">{post.user.name}</p>
-                                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                    <Calendar className="h-3 w-3" />
-                                                    <span>{post.created_at}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Dropdown Menu */}
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                >
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-44">
-                                                <DropdownMenuItem>
-                                                    <Eye className="mr-2 h-4 w-4" />
-                                                    Lihat Detail
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem>
-                                                    <Pencil className="mr-2 h-4 w-4" />
-                                                    Edit
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem>
-                                                    {post.is_hidden ? (
-                                                        <>
-                                                            <Eye className="mr-2 h-4 w-4" />
-                                                            Tampilkan
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <EyeOff className="mr-2 h-4 w-4" />
-                                                            Sembunyikan
-                                                        </>
-                                                    )}
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Hapus
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </CardHeader>
-
-                                <CardContent className="pb-3">
-                                    {/* Category Badge + Status */}
-                                    <div className="flex items-center gap-2 mb-2.5">
-                                        <Badge
-                                            className={`${BRAND.bgLight} ${BRAND.text} ${BRAND.darkBgLight} ${BRAND.darkText} border-0 text-[11px] font-medium`}
-                                        >
-                                            {post.category.name}
-                                        </Badge>
-                                        {post.is_hidden && (
-                                            <Badge variant="destructive" className="text-[11px]">
-                                                <EyeOff className="mr-1 h-3 w-3" />
-                                                Hidden
-                                            </Badge>
-                                        )}
-                                    </div>
-
-                                    {/* Title */}
-                                    <h3 className={`font-semibold leading-snug line-clamp-2 mb-2 transition-colors group-hover:${BRAND.text}`}>
-                                        {post.title}
-                                    </h3>
-
-                                    {/* Content Preview */}
-                                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                                        {post.content}
-                                    </p>
-                                </CardContent>
-
-                                <CardFooter className="border-t pt-3 pb-4">
-                                    <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
-                                        <div className="flex items-center gap-4">
-                                            <span className="flex items-center gap-1.5" title="Views">
-                                                <Eye className="h-3.5 w-3.5" />
-                                                <span className="font-medium">{formatViews(post.views)}</span>
-                                            </span>
-                                            <span className="flex items-center gap-1.5" title="Komentar">
-                                                <MessageCircle className="h-3.5 w-3.5" />
-                                                <span className="font-medium">{post.comments_count}</span>
-                                            </span>
-                                        </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className={`h-7 px-2.5 text-xs ${BRAND.text} ${BRAND.darkText} hover:${BRAND.bgLight}`}
-                                        >
-                                            Detail →
-                                        </Button>
-                                    </div>
-                                </CardFooter>
-                            </Card>
-                        ))}
-                    </div>
-                ) : (
-                    <Card className="border-0 shadow-sm">
-                        <CardContent className="flex flex-col items-center justify-center py-16">
-                            <div className={`rounded-full p-4 ${BRAND.bgLight} ${BRAND.darkBgLight} mb-4`}>
-                                <Search className={`h-8 w-8 ${BRAND.text} ${BRAND.darkText}`} />
-                            </div>
-                            <h3 className="text-lg font-semibold mb-1">Tidak ada diskusi ditemukan</h3>
-                            <p className="text-sm text-muted-foreground text-center max-w-sm">
-                                Coba ubah filter pencarian atau kategori untuk menemukan diskusi yang Anda cari.
-                            </p>
                         </CardContent>
                     </Card>
-                )}
+
+                    {/* Posts Grid */}
+                    {posts.data.length > 0 ? (
+                        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                            {posts.data.map((post) => (
+                                <PostCard key={post.id} post={post} />
+                            ))}
+                        </div>
+                    ) : (
+                        <Card className="border-0 shadow-lg">
+                            <CardContent className="flex flex-col items-center justify-center py-20">
+                                <div className={`rounded-2xl p-5 ${BRAND.bgLight} ${BRAND.darkBgLight} mb-5`}>
+                                    <Search className={`h-10 w-10 ${BRAND.text} ${BRAND.darkText}`} />
+                                </div>
+                                <h3 className="text-lg font-bold mb-1">Tidak ada diskusi ditemukan</h3>
+                                <p className="text-sm text-muted-foreground text-center max-w-md">
+                                    Coba ubah filter pencarian atau kategori untuk menemukan diskusi yang Anda cari.
+                                </p>
+                                <Button
+                                    variant="outline"
+                                    className="mt-5"
+                                    onClick={() => {
+                                        setSearch('');
+                                        router.get('/posts', {}, { preserveState: true });
+                                    }}
+                                >
+                                    Reset Filter
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Pagination */}
+                    {posts.last_page > 1 && (
+                        <Card className="border-0 shadow-lg">
+                            <CardContent className="py-4">
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <p className="text-sm text-muted-foreground">
+                                        Menampilkan <span className="font-semibold">{posts.from}</span>–
+                                        <span className="font-semibold">{posts.to}</span> dari{' '}
+                                        <span className="font-semibold">{posts.total}</span> diskusi
+                                    </p>
+                                    <div className="flex items-center gap-1">
+                                        {posts.links.map((link, i) => {
+                                            if (i === 0) {
+                                                return (
+                                                    <Button
+                                                        key="prev"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-9 w-9"
+                                                        disabled={!link.url}
+                                                        onClick={() => goToPage(link.url)}
+                                                    >
+                                                        <ChevronLeft className="h-4 w-4" />
+                                                    </Button>
+                                                );
+                                            }
+                                            if (i === posts.links.length - 1) {
+                                                return (
+                                                    <Button
+                                                        key="next"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-9 w-9"
+                                                        disabled={!link.url}
+                                                        onClick={() => goToPage(link.url)}
+                                                    >
+                                                        <ChevronRight className="h-4 w-4" />
+                                                    </Button>
+                                                );
+                                            }
+                                            return (
+                                                <Button
+                                                    key={link.label}
+                                                    variant={link.active ? 'default' : 'outline'}
+                                                    size="icon"
+                                                    className={`h-9 w-9 ${link.active ? 'bg-[#1548d7] hover:bg-[#1237b0] text-white' : ''}`}
+                                                    disabled={!link.url}
+                                                    onClick={() => goToPage(link.url)}
+                                                >
+                                                    {link.label}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+                                    <Select
+                                        value={String(filters.per_page)}
+                                        onValueChange={(val) => applyFilters({ per_page: Number(val) })}
+                                    >
+                                        <SelectTrigger className="w-28">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="6">6 / hal</SelectItem>
+                                            <SelectItem value="12">12 / hal</SelectItem>
+                                            <SelectItem value="24">24 / hal</SelectItem>
+                                            <SelectItem value="50">50 / hal</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
             </div>
         </AppLayout>
     );
