@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, PersonStanding, Pointer } from 'lucide-react';
+import { BookOpen, BoxIcon, Folder, LayoutGrid, PersonStanding, Pointer } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -32,6 +32,11 @@ const mainNavItems: NavItem[] = [
         href: '/users',
         icon: PersonStanding,
     },
+    {
+        title: 'Categories',
+        href: '/categories',
+        icon: BoxIcon,
+    },
 ];
 
 // const footerNavItems: NavItem[] = [
@@ -49,7 +54,7 @@ const mainNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

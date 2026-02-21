@@ -382,11 +382,15 @@ function useCommentEditor(placeholder: string) {
 function CommentItem({ comment, postId, depth = 0 }: { comment: CommentType; postId: number; depth?: number }) {
     const [replyOpen, setReplyOpen] = useState(false);
     const [submittingReply, setSubmittingReply] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [submittingEdit, setSubmittingEdit] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [liked, setLiked] = useState(false);
     const isNested = depth > 0;
     const initials = getInitials(comment.user.name);
 
     const replyEditor = useCommentEditor(`Balas ${comment.user.name}...`);
+    const editEditor = useCommentEditor('Edit komentar...');
 
     const handleSubmitReply = useCallback(() => {
         if (!replyEditor) return;
@@ -411,6 +415,44 @@ function CommentItem({ comment, postId, depth = 0 }: { comment: CommentType; pos
             },
         );
     }, [replyEditor, postId, comment.id]);
+
+    const handleStartEdit = useCallback(() => {
+        if (editEditor) {
+            editEditor.commands.setContent(comment.content);
+        }
+        setEditing(true);
+    }, [editEditor, comment.content]);
+
+    const handleCancelEdit = useCallback(() => {
+        setEditing(false);
+        editEditor?.commands.clearContent();
+    }, [editEditor]);
+
+    const handleSubmitEdit = useCallback(() => {
+        if (!editEditor) return;
+        const html = editEditor.getHTML();
+        if (!html || html === '<p></p>') return;
+
+        setSubmittingEdit(true);
+        router.put(
+            `/comments/${comment.id}`,
+            { content: html },
+            {
+                preserveScroll: true,
+                onSuccess: () => setEditing(false),
+                onFinish: () => setSubmittingEdit(false),
+            },
+        );
+    }, [editEditor, comment.id]);
+
+    const handleDelete = useCallback(() => {
+        if (!confirm('Apakah Anda yakin ingin menghapus komentar ini?')) return;
+        setDeleting(true);
+        router.delete(`/comments/${comment.id}`, {
+            preserveScroll: true,
+            onFinish: () => setDeleting(false),
+        });
+    }, [comment.id]);
 
     return (
         <div className={isNested ? 'ml-5 md:ml-8' : ''}>
@@ -456,24 +498,60 @@ function CommentItem({ comment, postId, depth = 0 }: { comment: CommentType; pos
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-40">
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handleStartEdit}>
                                             <Pencil className="mr-2 h-4 w-4" />
                                             Edit
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive">
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={handleDelete}
+                                            disabled={deleting}
+                                        >
                                             <Trash2 className="mr-2 h-4 w-4" />
-                                            Hapus
+                                            {deleting ? 'Menghapus...' : 'Hapus'}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
 
-                            {/* Render comment content as HTML from Tiptap */}
-                            <div
-                                className="prose prose-sm prose-neutral dark:prose-invert max-w-none text-sm leading-relaxed text-foreground/85"
-                                dangerouslySetInnerHTML={{ __html: comment.content }}
-                            />
+                            {/* Render comment content or edit editor */}
+                            {editing ? (
+                                <div className="mt-2 space-y-2">
+                                    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                                        <CommentEditorToolbar editor={editEditor} />
+                                        <EditorContent editor={editEditor} />
+                                    </div>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 text-xs"
+                                            onClick={handleCancelEdit}
+                                        >
+                                            Batal
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            className={`h-7 text-xs ${BRAND.bg} ${BRAND.bgHover} text-white`}
+                                            onClick={handleSubmitEdit}
+                                            disabled={submittingEdit}
+                                        >
+                                            {submittingEdit ? (
+                                                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                            ) : (
+                                                <Pencil className="mr-1 h-3 w-3" />
+                                            )}
+                                            Simpan
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div
+                                    className="prose prose-sm prose-neutral dark:prose-invert max-w-none text-sm leading-relaxed text-foreground/85"
+                                    dangerouslySetInnerHTML={{ __html: comment.content }}
+                                />
+                            )}
 
                             {comment.attachments && comment.attachments.length > 0 && (
                                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -494,15 +572,17 @@ function CommentItem({ comment, postId, depth = 0 }: { comment: CommentType; pos
                                 <ThumbsUp className={`h-3.5 w-3.5 ${liked ? 'fill-current' : ''}`} />
                                 {liked ? 1 : 0}
                             </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-xs text-muted-foreground gap-1"
-                                onClick={() => setReplyOpen(!replyOpen)}
-                            >
-                                <Reply className="h-3.5 w-3.5" />
-                                Balas
-                            </Button>
+                            {!isNested && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs text-muted-foreground gap-1"
+                                    onClick={() => setReplyOpen(!replyOpen)}
+                                >
+                                    <Reply className="h-3.5 w-3.5" />
+                                    Balas
+                                </Button>
+                            )}
                         </div>
 
                         {/* Reply Editor (Tiptap) */}
@@ -674,74 +754,74 @@ export default function PostShow() {
                         {/* ──── Left Column ──── */}
                         <div className="flex flex-col gap-6 min-w-0">
                             {/* <Card className="border-0 shadow-lg overflow-hidden"> */}
-                                <CardContent className="p-5 md:p-8">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center gap-2">
-                                            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                                                <ThumbsUp className="h-3.5 w-3.5" />
-                                                Suka
-                                            </Button>
-                                            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                                                <Share2 className="h-3.5 w-3.5" />
-                                                Share
-                                            </Button>
-                                        </div>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                                                    <MoreHorizontal className="h-3.5 w-3.5" />
-                                                    Kelola
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-44">
-                                                <DropdownMenuItem asChild>
-                                                    <a href={`/posts/${post.id}/edit`}>
-                                                        <Pencil className="mr-2 h-4 w-4" />
-                                                        Edit Diskusi
-                                                    </a>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem>
-                                                    <EyeOff className="mr-2 h-4 w-4" />
-                                                    Sembunyikan
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Hapus
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                            <CardContent className="p-5 md:p-8">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                                            <ThumbsUp className="h-3.5 w-3.5" />
+                                            Suka
+                                        </Button>
+                                        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                                            <Share2 className="h-3.5 w-3.5" />
+                                            Share
+                                        </Button>
                                     </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                                                <MoreHorizontal className="h-3.5 w-3.5" />
+                                                Kelola
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-44">
+                                            <DropdownMenuItem asChild>
+                                                <a href={`/posts/${post.id}/edit`}>
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Edit Diskusi
+                                                </a>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <EyeOff className="mr-2 h-4 w-4" />
+                                                Sembunyikan
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem className="text-destructive focus:text-destructive">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Hapus
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
 
-                                    <Separator className="mb-6" />
+                                <Separator className="mb-6" />
 
-                                    {/* Article Body — renders HTML from Tiptap */}
-                                    <article
-                                        className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.8] text-[15px]"
-                                        dangerouslySetInnerHTML={{ __html: post.content }}
-                                    />
+                                {/* Article Body — renders HTML from Tiptap */}
+                                <article
+                                    className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.8] text-[15px]"
+                                    dangerouslySetInnerHTML={{ __html: post.content }}
+                                />
 
-                                    {/* Attachments */}
-                                    {post.attachments && post.attachments.length > 0 && (
-                                        <div className="mt-8 pt-6 border-t">
-                                            <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                                                <div className={`rounded-lg p-1.5 ${BRAND.bgLight} ${BRAND.darkBgLight}`}>
-                                                    <Paperclip className={`h-4 w-4 ${BRAND.text} ${BRAND.darkText}`} />
-                                                </div>
-                                                Lampiran ({post.attachments.length})
-                                            </h4>
-                                            <div className="grid gap-3 sm:grid-cols-2">
-                                                {post.attachments.map((att) => (
-                                                    <AttachmentCard key={att.id} attachment={att} />
-                                                ))}
+                                {/* Attachments */}
+                                {post.attachments && post.attachments.length > 0 && (
+                                    <div className="mt-8 pt-6 border-t">
+                                        <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                                            <div className={`rounded-lg p-1.5 ${BRAND.bgLight} ${BRAND.darkBgLight}`}>
+                                                <Paperclip className={`h-4 w-4 ${BRAND.text} ${BRAND.darkText}`} />
                                             </div>
+                                            Lampiran ({post.attachments.length})
+                                        </h4>
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            {post.attachments.map((att) => (
+                                                <AttachmentCard key={att.id} attachment={att} />
+                                            ))}
                                         </div>
-                                    )}
-                                </CardContent>
+                                    </div>
+                                )}
+                            </CardContent>
                             {/* </Card> */}
 
                             {/* Comment Input Card — Tiptap Editor */}
-                            <Card className="border-0 shadow-lg overflow-hidden">
+                            {/* <Card className="border-0 shadow-lg overflow-hidden"> */}
                                 <CardHeader className="pb-0 pt-5 px-5 md:px-8">
                                     <h3 className="text-sm font-semibold flex items-center gap-2">
                                         <Pencil className={`h-4 w-4 ${BRAND.text} ${BRAND.darkText}`} />
@@ -777,10 +857,10 @@ export default function PostShow() {
                                         </div>
                                     </div>
                                 </CardContent>
-                            </Card>
+                            {/* </Card> */}
 
                             {/* Comments Section */}
-                            <Card className="border-0 shadow-lg overflow-hidden">
+                            {/* <Card className="border-0 shadow-lg overflow-hidden"> */}
                                 <CardHeader className="pb-2 px-5 md:px-8">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-base font-semibold flex items-center gap-2.5">
@@ -818,7 +898,7 @@ export default function PostShow() {
                                         </div>
                                     )}
                                 </CardContent>
-                            </Card>
+                            {/* </Card> */}
                         </div>
                     </div>
                 </div>

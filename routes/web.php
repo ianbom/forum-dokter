@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostController;
@@ -20,8 +21,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
     Route::resource('posts', PostController::class);
-
-    Route::post('comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::resource('comments', CommentController::class);
+    Route::resource('categories', CategoryController::class);
 
     Route::get('users', function () {
         return Inertia::render('admin/users/index');

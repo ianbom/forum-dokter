@@ -16,7 +16,6 @@ import {
     SortAsc,
     Sparkles,
     Trash2,
-    TrendingUp,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -155,8 +154,8 @@ function PostCard({ post }: { post: Post }) {
             className={`group relative overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${post.is_hidden ? 'opacity-60' : ''}`}
         >
             <div className={`h-1 bg-linear-to-r ${post.is_hidden
-                    ? 'from-gray-400 to-gray-300 dark:from-gray-600 dark:to-gray-500'
-                    : 'from-[#1548d7] to-[#3b6ef5]'
+                ? 'from-gray-400 to-gray-300 dark:from-gray-600 dark:to-gray-500'
+                : 'from-[#1548d7] to-[#3b6ef5]'
                 }`} />
 
             <CardContent className="p-5">
@@ -318,26 +317,22 @@ export default function PostsIndex() {
             <Head title="Kelola Diskusi" />
             <div className="flex flex-col gap-0">
                 {/* ═══════════════ Hero Header ═══════════════ */}
-                <div className="relative overflow-hidden bg-linear-to-br from-[#1548d7] via-[#1d5aef] to-[#3b6ef5]">
-                    <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-white/5" />
-                    <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-white/5" />
-                    <div className="absolute top-1/2 left-1/2 h-28 w-28 rounded-full bg-white/3" />
-
+                <div className="relative overflow-hidden border-b">
                     <div className="relative mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
                         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="rounded-lg bg-white/15 backdrop-blur-sm p-2">
-                                        <Sparkles className="h-5 w-5 text-white" />
+                                    <div className="rounded-lg bg-[#1548d7]/10 dark:bg-[#6b93f5]/10 p-2">
+                                        <Sparkles className="h-5 w-5 text-[#1548d7] dark:text-[#6b93f5]" />
                                     </div>
-                                    <h1 className="text-xl md:text-2xl font-bold text-white">Kelola Diskusi</h1>
+                                    <h1 className="text-xl md:text-2xl font-bold">Kelola Diskusi</h1>
                                 </div>
-                                <p className="text-sm text-white/60">
+                                <p className="text-sm text-muted-foreground">
                                     Kelola semua diskusi forum dokter di satu tempat
                                 </p>
                             </div>
                             <Button
-                                className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm shadow-lg"
+                                className="bg-[#1548d7] hover:bg-[#1240b8] text-white shadow-md"
                                 asChild
                             >
                                 <a href="/posts/create">
@@ -348,14 +343,14 @@ export default function PostsIndex() {
                         </div>
 
                         {/* Stat Pills */}
-                        <div className="flex items-center gap-3 mt-6 flex-wrap">
+                        <div className="flex items-center gap-3 mt-4 flex-wrap">
                             {[
                                 { label: `${posts.total} Total`, icon: Sparkles },
                                 { label: `Halaman ${posts.current_page}/${posts.last_page}`, icon: Filter },
                             ].map((stat) => (
                                 <div
                                     key={stat.label}
-                                    className="flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-sm px-3 py-1.5 text-xs text-white/80 font-medium"
+                                    className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground font-medium"
                                 >
                                     <stat.icon className="h-3.5 w-3.5" />
                                     {stat.label}

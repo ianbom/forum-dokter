@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCommentRequest;
+use App\Http\Requests\UpdateCommentRequest;
+use App\Models\Comment;
 use App\Services\CommentService;
 use Illuminate\Http\RedirectResponse;
 
@@ -31,6 +33,40 @@ class CommentController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'Gagal menambahkan komentar.');
+        }
+    }
+
+    public function update(UpdateCommentRequest $request, Comment $comment): RedirectResponse
+    {
+        try {
+            $validated = $request->validated();
+
+            $this->commentService->update($comment, [
+                'content' => $validated['content'],
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('success', 'Komentar berhasil diperbarui.');
+        } catch (\Throwable $th) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal memperbarui komentar.');
+        }
+    }
+
+    public function destroy(Comment $comment): RedirectResponse
+    {
+        try {
+            $this->commentService->delete($comment);
+
+            return redirect()
+                ->back()
+                ->with('success', 'Komentar berhasil dihapus.');
+        } catch (\Throwable $th) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal menghapus komentar.');
         }
     }
 }

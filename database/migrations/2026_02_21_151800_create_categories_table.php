@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->timestamp('created_at')->nullable();
+            $table->timestamps();
         });
     }
 

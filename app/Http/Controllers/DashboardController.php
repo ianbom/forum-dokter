@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -55,15 +56,7 @@ class DashboardController extends Controller
                 'posts_count' => $cat->posts_count,
             ]);
 
-        $postsPerDay = Post::where('created_at', '>=', Carbon::now()->subDays(6))
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->map(fn ($item) => [
-                'date' => Carbon::parse($item->date)->format('d M'),
-                'count' => $item->count,
-            ]);
+        $chartData = $this->getChartData();
 
         return Inertia::render('dashboard', [
             'stats' => [
@@ -77,7 +70,39 @@ class DashboardController extends Controller
             ],
             'recentPosts' => $recentPosts,
             'topCategories' => $topCategories,
-            'postsPerDay' => $postsPerDay,
+            'chartData' => $chartData,
         ]);
+    }
+
+    private function getChartData(): array
+    {
+        $startDate = Carbon::now()->subDays(89)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        $usersRaw = User::where('created_at', '>=', $startDate)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('count', 'date');
+
+        $postsRaw = Post::where('created_at', '>=', $startDate)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('count', 'date');
+
+        $period = CarbonPeriod::create($startDate, $endDate);
+        $data = [];
+
+        foreach ($period as $date) {
+            $key = $date->format('Y-m-d');
+            $data[] = [
+                'date' => $key,
+                'users' => (int) ($usersRaw[$key] ?? 0),
+                'posts' => (int) ($postsRaw[$key] ?? 0),
+            ];
+        }
+
+        return $data;
     }
 }
