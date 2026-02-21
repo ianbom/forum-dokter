@@ -674,7 +674,7 @@ export default function PostShow() {
             <Head title={post.title} />
             <div className="flex flex-col gap-0 p-0">
                 {/* ═══════════════ Hero Header ═══════════════ */}
-                <div className="relative overflow-hidden bg-linear-to-br from-[#1548d7] via-[#1d5aef] to-[#3b6ef5]">
+                <div className="relative overflow-hidden bg-linear-to-br from-primary via-primary to-[#3b6ef5]">
                     <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/5" />
                     <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/5" />
                     <div className="absolute top-1/2 left-1/3 h-32 w-32 rounded-full bg-white/3" />
