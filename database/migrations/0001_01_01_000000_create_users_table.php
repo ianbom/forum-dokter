@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('specialization')->nullable();
             $table->string('profile_photo')->nullable();
             $table->text('bio')->nullable();
+            $table->enum('role', ['admin', 'user'])->default('user');
             $table->rememberToken();
             $table->timestamps();
         });
