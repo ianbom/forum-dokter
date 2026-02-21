@@ -670,10 +670,10 @@ export default function PostShow() {
 
                 {/* ═══════════════ Main Content ═══════════════ */}
                 <div className="mx-auto w-full max-w-6xl px-4 md:px-6 py-6">
-                    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+                    <div className="grid gap-6 lg:grid-cols-[1fr]">
                         {/* ──── Left Column ──── */}
                         <div className="flex flex-col gap-6 min-w-0">
-                            <Card className="border-0 shadow-lg overflow-hidden">
+                            {/* <Card className="border-0 shadow-lg overflow-hidden"> */}
                                 <CardContent className="p-5 md:p-8">
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-2">
@@ -738,7 +738,7 @@ export default function PostShow() {
                                         </div>
                                     )}
                                 </CardContent>
-                            </Card>
+                            {/* </Card> */}
 
                             {/* Comment Input Card — Tiptap Editor */}
                             <Card className="border-0 shadow-lg overflow-hidden">
@@ -817,78 +817,6 @@ export default function PostShow() {
                                             </p>
                                         </div>
                                     )}
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* ──── Right Sidebar ──── */}
-                        <div className="flex flex-col gap-5">
-                            <Card className="border-0 shadow-lg overflow-hidden sticky top-6">
-                                <div className="h-16 bg-linear-to-r from-[#1548d7] to-[#3b6ef5]" />
-                                <CardContent className="pt-0 pb-5 px-5">
-                                    <div className="-mt-8 mb-3">
-                                        <Avatar className="h-14 w-14 ring-4 ring-background shadow-lg">
-                                            <AvatarFallback className={`${BRAND.bg} text-white font-bold text-lg`}>
-                                                {userInitials}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </div>
-                                    <h4 className="font-semibold">{post.user.name}</h4>
-                                    {post.user.specialization && (
-                                        <Badge className={`${BRAND.bgLight} ${BRAND.text} ${BRAND.darkBgLight} ${BRAND.darkText} border-0 text-[11px] mt-1`}>
-                                            {post.user.specialization}
-                                        </Badge>
-                                    )}
-                                    {post.user.bio && (
-                                        <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                                            {post.user.bio}
-                                        </p>
-                                    )}
-                                    <Separator className="my-4" />
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="rounded-lg bg-muted/40 dark:bg-muted/20 p-3 text-center">
-                                            <p className={`text-lg font-bold ${BRAND.text} ${BRAND.darkText}`}>
-                                                {post.user.posts_count ?? 0}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                                                Diskusi
-                                            </p>
-                                        </div>
-                                        <div className="rounded-lg bg-muted/40 dark:bg-muted/20 p-3 text-center">
-                                            <p className={`text-lg font-bold ${BRAND.text} ${BRAND.darkText}`}>
-                                                {post.user.comments_count ?? 0}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                                                Komentar
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="border-0 shadow-lg">
-                                <CardHeader className="pb-2 px-5 pt-5">
-                                    <h4 className="text-sm font-semibold flex items-center gap-2">
-                                        <TrendingUp className={`h-4 w-4 ${BRAND.text} ${BRAND.darkText}`} />
-                                        Statistik Diskusi
-                                    </h4>
-                                </CardHeader>
-                                <CardContent className="px-5 pb-5 space-y-3">
-                                    {[
-                                        { icon: Eye, label: 'Total Views', value: post.views.toLocaleString('id-ID'), color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-500/20' },
-                                        { icon: MessageCircle, label: 'Komentar', value: commentsCount.toString(), color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20' },
-                                        { icon: Users, label: 'Partisipan', value: getUniqueParticipants(post.comments).toString(), color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20' },
-                                    ].map((item) => (
-                                        <div key={item.label} className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className={`rounded-lg p-1.5 ${item.color}`}>
-                                                    <item.icon className="h-3.5 w-3.5" />
-                                                </div>
-                                                <span className="text-sm text-muted-foreground">{item.label}</span>
-                                            </div>
-                                            <span className="text-sm font-bold">{item.value}</span>
-                                        </div>
-                                    ))}
                                 </CardContent>
                             </Card>
                         </div>
