@@ -284,13 +284,12 @@ export default function PostCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Buat Diskusi Baru" />
-            <div className="flex flex-col gap-0">
+            <div className="flex flex-col gap-6 p-4 md:p-6">
                 {/* Hero Header */}
-                <div className="relative overflow-hidden bg-linear-to-br from-[#1548d7] via-[#1d5aef] to-[#3b6ef5]">
-                    <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-white/5" />
-                    <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-white/5" />
-
-                    <div className="relative mx-auto max-w-4xl px-4 py-6 md:px-6 md:py-8">
+                <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#1548d7] via-[#1d5aef] to-[#3b6ef5] p-6 md:p-8 text-white shadow-xl">
+                    <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-white/10 blur-2xl" />
+                    <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+                    <div className="relative z-10">
                         <Button
                             variant="ghost"
                             size="sm"
@@ -311,9 +310,9 @@ export default function PostCreate() {
                 </div>
 
                 {/* Content */}
-                <div className="mx-auto w-full max-w-4xl px-4 md:px-6 py-6 flex flex-col gap-5">
+                <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
                     {/* Title & Category Row */}
-                    <Card className="border-0 shadow-lg overflow-hidden">
+                    {/* <Card className="border-0 shadow-lg overflow-hidden"> */}
                         <CardContent className="p-5 md:p-6 space-y-4">
                             <div>
                                 <Input
@@ -357,10 +356,10 @@ export default function PostCreate() {
                                 </div>
                             </div>
                         </CardContent>
-                    </Card>
+                    {/* </Card> */}
 
                     {/* Editor */}
-                    <Card className={`border-0 shadow-lg overflow-hidden ${errors.content ? 'ring-1 ring-destructive' : ''}`}>
+                    <div className={`border-1 shadow-sm overflow-hidden ${errors.content ? 'ring-1 ring-destructive' : ''}`}>
                         <EditorToolbar editor={editor} />
                         <EditorContent editor={editor} />
                         {errors.content && (
@@ -368,16 +367,16 @@ export default function PostCreate() {
                                 <p className="text-xs text-destructive">{errors.content}</p>
                             </div>
                         )}
-                    </Card>
+                    </div>
 
                     {/* Submit Bar */}
-                    <Card className="border-0 shadow-lg">
+                    {/* <Card className="border-0 shadow-lg"> */}
                         <CardContent className="p-4 flex items-center justify-between">
                             <p className="text-xs text-muted-foreground">
                                 Tips: Gunakan toolbar di atas untuk memformat teks, menambahkan gambar, link, dan lainnya.
                             </p>
                             <Button
-                                className="bg-[#1548d7] hover:bg-[#1237b0] text-white shadow-md"
+                                className="bg-[#1548d7] hover:bg-[#1237b0] text-white shadow-md cursor-pointer disabled:cursor-not-allowed disabled:bg-[#1548d7]/80 disabled:hover:bg-[#1548d7]/80"
                                 onClick={handleSubmit}
                                 disabled={submitting}
                             >
@@ -389,7 +388,7 @@ export default function PostCreate() {
                                 {submitting ? 'Mengirim...' : 'Publikasikan'}
                             </Button>
                         </CardContent>
-                    </Card>
+                    {/* </Card> */}
                 </div>
             </div>
 

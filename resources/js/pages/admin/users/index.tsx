@@ -1,13 +1,17 @@
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
+    ChevronLeft,
+    ChevronRight,
     MoreHorizontal,
     Pencil,
     Search,
     Shield,
+    SortAsc,
     Trash2,
     UserPlus,
+    Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,101 +54,54 @@ type User = {
     specialization: string | null;
     bio: string | null;
     role: 'admin' | 'user';
+    posts_count: number;
+    comments_count: number;
     created_at: string;
 };
 
-const dummyUsers: User[] = [
-    {
-        id: 1,
-        name: 'Dr. Andi Pratama',
-        email: 'andi.pratama@hospital.id',
-        specialization: 'Pediatri',
-        bio: 'Dokter spesialis anak dengan pengalaman 12 tahun di RS Jakarta.',
-        role: 'admin',
-        created_at: '2026-01-05',
-    },
-    {
-        id: 2,
-        name: 'Dr. Siti Nurhaliza',
-        email: 'siti.nurhaliza@hospital.id',
-        specialization: 'Kardiologi',
-        bio: 'Ahli kardiologi interventional, fokus pada pemasangan stent jantung.',
-        role: 'user',
-        created_at: '2026-01-10',
-    },
-    {
-        id: 3,
-        name: 'Dr. Budi Santoso',
-        email: 'budi.santoso@hospital.id',
-        specialization: 'Endokrinologi',
-        bio: 'Spesialis endokrin dan metabolik, peneliti aktif di bidang diabetes.',
-        role: 'user',
-        created_at: '2026-01-15',
-    },
-    {
-        id: 4,
-        name: 'Dr. Rina Wulandari',
-        email: 'rina.wulandari@hospital.id',
-        specialization: 'Neurologi',
-        bio: 'Neurolog dengan sub-spesialisasi stroke dan penyakit neurodegeneratif.',
-        role: 'user',
-        created_at: '2026-01-22',
-    },
-    {
-        id: 5,
-        name: 'Dr. Hendra Wijaya',
-        email: 'hendra.wijaya@hospital.id',
-        specialization: 'Urologi',
-        bio: 'Spesialis urologi dengan keahlian bedah minimal invasif.',
-        role: 'user',
-        created_at: '2026-02-01',
-    },
-    {
-        id: 6,
-        name: 'Dr. Maya Sari',
-        email: 'maya.sari@hospital.id',
-        specialization: 'Dermatologi',
-        bio: 'Dokter kulit dan kelamin dengan fokus pada dermatologi estetik.',
-        role: 'admin',
-        created_at: '2026-02-05',
-    },
-    {
-        id: 7,
-        name: 'Dr. Ahmad Fauzi',
-        email: 'ahmad.fauzi@hospital.id',
-        specialization: 'Imunologi',
-        bio: 'Ahli imunologi dan alergi, aktif dalam program vaksinasi nasional.',
-        role: 'user',
-        created_at: '2026-02-10',
-    },
-    {
-        id: 8,
-        name: 'Dr. Lisa Permata',
-        email: 'lisa.permata@hospital.id',
-        specialization: 'Bedah Umum',
-        bio: 'Dokter bedah umum dengan pengalaman 8 tahun di unit gawat darurat.',
-        role: 'user',
-        created_at: '2026-02-14',
-    },
-    {
-        id: 9,
-        name: 'Dr. Reza Firmansyah',
-        email: 'reza.firmansyah@hospital.id',
-        specialization: null,
-        bio: null,
-        role: 'user',
-        created_at: '2026-02-18',
-    },
-    {
-        id: 10,
-        name: 'Dr. Dewi Anggraini',
-        email: 'dewi.anggraini@hospital.id',
-        specialization: 'Obstetri & Ginekologi',
-        bio: 'Spesialis kebidanan dan kandungan dengan fokus pada kehamilan risiko tinggi.',
-        role: 'user',
-        created_at: '2026-02-20',
-    },
-];
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+type PaginatedUsers = {
+    data: User[];
+    links: {
+        first: string | null;
+        last: string | null;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number | null;
+        to: number | null;
+        links: PaginationLink[];
+    };
+};
+
+type Filters = {
+    search: string;
+    role: string;
+    sort: string;
+    per_page: number;
+};
+
+type Counts = {
+    total: number;
+    admin: number;
+    user: number;
+};
+
+type PageProps = {
+    users: PaginatedUsers;
+    counts: Counts;
+    filters: Filters;
+};
 
 function getInitials(name: string): string {
     return name
@@ -165,22 +122,41 @@ const BRAND = {
 };
 
 export default function UsersIndex() {
-    const [search, setSearch] = useState('');
-    const [roleFilter, setRoleFilter] = useState('all');
+    const { users, counts, filters } = usePage<PageProps>().props;
+    const [search, setSearch] = useState(filters.search);
 
-    const filteredUsers = dummyUsers.filter((user) => {
-        const matchesSearch =
-            user.name.toLowerCase().includes(search.toLowerCase()) ||
-            user.email.toLowerCase().includes(search.toLowerCase()) ||
-            (user.specialization?.toLowerCase().includes(search.toLowerCase()) ?? false);
-        const matchesRole =
-            roleFilter === 'all' || user.role === roleFilter;
-        return matchesSearch && matchesRole;
-    });
+    const applyFilters = useCallback(
+        (newFilters: Partial<Filters>) => {
+            const params: Record<string, string> = {};
+            const merged = { ...filters, ...newFilters };
 
-    const totalUsers = dummyUsers.length;
-    const adminCount = dummyUsers.filter((u) => u.role === 'admin').length;
-    const userCount = dummyUsers.filter((u) => u.role === 'user').length;
+            if (merged.search) params.search = merged.search;
+            if (merged.role) params.role = merged.role;
+            if (merged.sort && merged.sort !== 'latest') params.sort = merged.sort;
+            if (merged.per_page && merged.per_page !== 10) params.per_page = String(merged.per_page);
+
+            router.get('/users', params, { preserveState: true, preserveScroll: true });
+        },
+        [filters],
+    );
+
+    const handleSearch = useCallback(() => {
+        applyFilters({ search });
+    }, [search, applyFilters]);
+
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter') handleSearch();
+        },
+        [handleSearch],
+    );
+
+    const goToPage = useCallback(
+        (url: string | null) => {
+            if (url) router.get(url, {}, { preserveState: true, preserveScroll: true });
+        },
+        [],
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -205,10 +181,10 @@ export default function UsersIndex() {
                     <Card className="border-0 shadow-sm">
                         <CardContent className="flex items-center gap-4 py-4">
                             <div className={`rounded-xl p-3 ${BRAND.bgLight} ${BRAND.darkBgLight}`}>
-                                <UserPlus className={`h-5 w-5 ${BRAND.text} ${BRAND.darkText}`} />
+                                <Users className={`h-5 w-5 ${BRAND.text} ${BRAND.darkText}`} />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">{totalUsers}</p>
+                                <p className="text-2xl font-bold">{counts.total}</p>
                                 <p className="text-xs text-muted-foreground">Total Pengguna</p>
                             </div>
                         </CardContent>
@@ -219,7 +195,7 @@ export default function UsersIndex() {
                                 <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">{adminCount}</p>
+                                <p className="text-2xl font-bold">{counts.admin}</p>
                                 <p className="text-xs text-muted-foreground">Admin</p>
                             </div>
                         </CardContent>
@@ -230,7 +206,7 @@ export default function UsersIndex() {
                                 <UserPlus className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">{userCount}</p>
+                                <p className="text-2xl font-bold">{counts.user}</p>
                                 <p className="text-xs text-muted-foreground">User Biasa</p>
                             </div>
                         </CardContent>
@@ -250,18 +226,39 @@ export default function UsersIndex() {
                                         placeholder="Cari nama, email, spesialisasi..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={handleKeyDown}
                                         className="pl-9 w-full sm:w-72 focus-visible:ring-[#1548d7]/30"
                                     />
                                 </div>
                                 {/* Role Filter */}
-                                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                                <Select
+                                    value={filters.role || '_all'}
+                                    onValueChange={(val) => applyFilters({ role: val === '_all' ? '' : val })}
+                                >
                                     <SelectTrigger className="w-full sm:w-36">
                                         <SelectValue placeholder="Role" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">Semua Role</SelectItem>
+                                        <SelectItem value="_all">Semua Role</SelectItem>
                                         <SelectItem value="admin">Admin</SelectItem>
                                         <SelectItem value="user">User</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {/* Sort */}
+                                <Select
+                                    value={filters.sort}
+                                    onValueChange={(val) => applyFilters({ sort: val })}
+                                >
+                                    <SelectTrigger className="w-full sm:w-44">
+                                        <SortAsc className="mr-2 h-4 w-4 text-muted-foreground" />
+                                        <SelectValue placeholder="Urutkan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="latest">Terbaru</SelectItem>
+                                        <SelectItem value="oldest">Terlama</SelectItem>
+                                        <SelectItem value="name_asc">Nama A-Z</SelectItem>
+                                        <SelectItem value="name_desc">Nama Z-A</SelectItem>
+                                        <SelectItem value="most_posts">Post Terbanyak</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -281,15 +278,15 @@ export default function UsersIndex() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredUsers.length > 0 ? (
-                                        filteredUsers.map((user, idx) => (
+                                    {users.data.length > 0 ? (
+                                        users.data.map((user, idx) => (
                                             <TableRow
                                                 key={user.id}
                                                 className="group transition-colors"
                                             >
                                                 {/* Index */}
                                                 <TableCell className="pl-6 font-medium text-muted-foreground">
-                                                    {idx + 1}
+                                                    {(users.meta.from ?? 0) + idx}
                                                 </TableCell>
 
                                                 {/* User Info */}
@@ -402,23 +399,72 @@ export default function UsersIndex() {
                             </Table>
                         </div>
 
-                        {/* Footer */}
-                        <div className="flex items-center justify-between border-t px-6 py-3">
+                        {/* Footer / Pagination */}
+                        <div className="flex flex-col sm:flex-row items-center justify-between border-t px-6 py-3 gap-3">
                             <p className="text-xs text-muted-foreground">
-                                Menampilkan <span className="font-semibold">{filteredUsers.length}</span> dari{' '}
-                                <span className="font-semibold">{totalUsers}</span> pengguna
+                                Menampilkan{' '}
+                                <span className="font-semibold">{users.meta.from ?? 0}</span>–
+                                <span className="font-semibold">{users.meta.to ?? 0}</span> dari{' '}
+                                <span className="font-semibold">{users.meta.total}</span> pengguna
                             </p>
-                            <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" className="h-8 text-xs" disabled>
-                                    Sebelumnya
-                                </Button>
-                                <Button variant="outline" size="sm" className={`h-8 text-xs ${BRAND.bg} ${BRAND.bgHover} text-white border-0`}>
-                                    1
-                                </Button>
-                                <Button variant="outline" size="sm" className="h-8 text-xs" disabled>
-                                    Selanjutnya
-                                </Button>
+                            <div className="flex items-center gap-1">
+                                {users.meta.links.map((link, i) => {
+                                    if (i === 0) {
+                                        return (
+                                            <Button
+                                                key="prev"
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                disabled={!link.url}
+                                                onClick={() => goToPage(link.url)}
+                                            >
+                                                <ChevronLeft className="h-4 w-4" />
+                                            </Button>
+                                        );
+                                    }
+                                    if (i === users.meta.links.length - 1) {
+                                        return (
+                                            <Button
+                                                key="next"
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                disabled={!link.url}
+                                                onClick={() => goToPage(link.url)}
+                                            >
+                                                <ChevronRight className="h-4 w-4" />
+                                            </Button>
+                                        );
+                                    }
+                                    return (
+                                        <Button
+                                            key={link.label}
+                                            variant={link.active ? 'default' : 'outline'}
+                                            size="icon"
+                                            className={`h-8 w-8 text-xs ${link.active ? `${BRAND.bg} ${BRAND.bgHover} text-white border-0` : ''}`}
+                                            disabled={!link.url}
+                                            onClick={() => goToPage(link.url)}
+                                        >
+                                            {link.label}
+                                        </Button>
+                                    );
+                                })}
                             </div>
+                            <Select
+                                value={String(filters.per_page)}
+                                onValueChange={(val) => applyFilters({ per_page: Number(val) })}
+                            >
+                                <SelectTrigger className="w-28">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="5">5 / hal</SelectItem>
+                                    <SelectItem value="10">10 / hal</SelectItem>
+                                    <SelectItem value="25">25 / hal</SelectItem>
+                                    <SelectItem value="50">50 / hal</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </CardContent>
                 </Card>

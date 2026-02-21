@@ -66,13 +66,21 @@ type PaginationLink = {
 
 type PaginatedPosts = {
     data: Post[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-    from: number | null;
-    to: number | null;
-    links: PaginationLink[];
+    links: {
+        first: string | null;
+        last: string | null;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number | null;
+        to: number | null;
+        links: PaginationLink[];
+    };
 };
 
 type Category = {
@@ -345,8 +353,8 @@ export default function PostsIndex() {
                         {/* Stat Pills */}
                         <div className="flex items-center gap-3 mt-4 flex-wrap">
                             {[
-                                { label: `${posts.total} Total`, icon: Sparkles },
-                                { label: `Halaman ${posts.current_page}/${posts.last_page}`, icon: Filter },
+                                { label: `${posts.meta.total} Total`, icon: Sparkles },
+                                { label: `Halaman ${posts.meta.current_page}/${posts.meta.last_page}`, icon: Filter },
                             ].map((stat) => (
                                 <div
                                     key={stat.label}
@@ -363,7 +371,7 @@ export default function PostsIndex() {
                 {/* ═══════════════ Content Area ═══════════════ */}
                 <div className="mx-auto w-full max-w-7xl px-4 md:px-6 py-6 flex flex-col gap-6">
                     {/* Filters Bar */}
-                    <Card className="border-0 shadow-lg overflow-hidden">
+                    {/* <Card className="border-0 shadow-lg overflow-hidden"> */}
                         <CardContent className="py-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <div className="relative flex-1">
@@ -424,7 +432,7 @@ export default function PostsIndex() {
                                 </Select>
                             </div>
                         </CardContent>
-                    </Card>
+                    {/* </Card> */}
 
                     {/* Posts Grid */}
                     {posts.data.length > 0 ? (
@@ -458,59 +466,61 @@ export default function PostsIndex() {
                     )}
 
                     {/* Pagination */}
-                    {posts.last_page > 1 && (
-                        <Card className="border-0 shadow-lg">
+                    {posts.data.length > 0 && (
+                        // <Card className="border-0 shadow-lg">
                             <CardContent className="py-4">
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                                     <p className="text-sm text-muted-foreground">
-                                        Menampilkan <span className="font-semibold">{posts.from}</span>–
-                                        <span className="font-semibold">{posts.to}</span> dari{' '}
-                                        <span className="font-semibold">{posts.total}</span> diskusi
+                                        Menampilkan <span className="font-semibold">{posts.meta.from}</span>–
+                                        <span className="font-semibold">{posts.meta.to}</span> dari{' '}
+                                        <span className="font-semibold">{posts.meta.total}</span> diskusi
                                     </p>
-                                    <div className="flex items-center gap-1">
-                                        {posts.links.map((link, i) => {
-                                            if (i === 0) {
+                                    {posts.meta.last_page > 1 && (
+                                        <div className="flex items-center gap-1">
+                                            {posts.meta.links.map((link, i) => {
+                                                if (i === 0) {
+                                                    return (
+                                                        <Button
+                                                            key="prev"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-9 w-9"
+                                                            disabled={!link.url}
+                                                            onClick={() => goToPage(link.url)}
+                                                        >
+                                                            <ChevronLeft className="h-4 w-4" />
+                                                        </Button>
+                                                    );
+                                                }
+                                                if (i === posts.meta.links.length - 1) {
+                                                    return (
+                                                        <Button
+                                                            key="next"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-9 w-9"
+                                                            disabled={!link.url}
+                                                            onClick={() => goToPage(link.url)}
+                                                        >
+                                                            <ChevronRight className="h-4 w-4" />
+                                                        </Button>
+                                                    );
+                                                }
                                                 return (
                                                     <Button
-                                                        key="prev"
-                                                        variant="outline"
+                                                        key={link.label}
+                                                        variant={link.active ? 'default' : 'outline'}
                                                         size="icon"
-                                                        className="h-9 w-9"
+                                                        className={`h-9 w-9 ${link.active ? 'bg-[#1548d7] hover:bg-[#1237b0] text-white border-0' : ''}`}
                                                         disabled={!link.url}
                                                         onClick={() => goToPage(link.url)}
                                                     >
-                                                        <ChevronLeft className="h-4 w-4" />
+                                                        {link.label}
                                                     </Button>
                                                 );
-                                            }
-                                            if (i === posts.links.length - 1) {
-                                                return (
-                                                    <Button
-                                                        key="next"
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="h-9 w-9"
-                                                        disabled={!link.url}
-                                                        onClick={() => goToPage(link.url)}
-                                                    >
-                                                        <ChevronRight className="h-4 w-4" />
-                                                    </Button>
-                                                );
-                                            }
-                                            return (
-                                                <Button
-                                                    key={link.label}
-                                                    variant={link.active ? 'default' : 'outline'}
-                                                    size="icon"
-                                                    className={`h-9 w-9 ${link.active ? 'bg-[#1548d7] hover:bg-[#1237b0] text-white' : ''}`}
-                                                    disabled={!link.url}
-                                                    onClick={() => goToPage(link.url)}
-                                                >
-                                                    {link.label}
-                                                </Button>
-                                            );
-                                        })}
-                                    </div>
+                                            })}
+                                        </div>
+                                    )}
                                     <Select
                                         value={String(filters.per_page)}
                                         onValueChange={(val) => applyFilters({ per_page: Number(val) })}
@@ -519,15 +529,15 @@ export default function PostsIndex() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="6">6 / hal</SelectItem>
-                                            <SelectItem value="12">12 / hal</SelectItem>
-                                            <SelectItem value="24">24 / hal</SelectItem>
-                                            <SelectItem value="50">50 / hal</SelectItem>
+                                            <SelectItem value="6">6 / page</SelectItem>
+                                            <SelectItem value="12">12 / page</SelectItem>
+                                            <SelectItem value="24">24 / page</SelectItem>
+                                            <SelectItem value="50">50 / page</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                             </CardContent>
-                        </Card>
+                        // </Card>
                     )}
                 </div>
             </div>

@@ -4,6 +4,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -24,9 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('comments', CommentController::class);
     Route::resource('categories', CategoryController::class);
 
-    Route::get('users', function () {
-        return Inertia::render('admin/users/index');
-    })->name('users.index');
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
 });
 
 require __DIR__.'/settings.php';
