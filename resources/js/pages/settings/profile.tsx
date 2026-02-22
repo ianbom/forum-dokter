@@ -276,7 +276,7 @@ export default function Profile({
                     </form>
                 </div>
 
-                <DeleteUser />
+                {/* <DeleteUser /> */}
 
                 <Dialog open={cropDialogOpen} onOpenChange={setCropDialogOpen}>
                     <DialogContent className="max-w-md">

@@ -192,27 +192,42 @@ export default function CategoryIndex() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Kategori" />
-            <div className="flex flex-col gap-6 p-4 md:p-6">
-                {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Kategori</h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Kelola kategori untuk diskusi di forum
-                        </p>
+            <div className="flex flex-col gap-0">
+                {/* Hero / Header */}
+                <div className="relative overflow-hidden bg-background border-b border-border/60">
+                    {/* Decorative Elements */}
+                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]" />
+                    <div className="pointer-events-none absolute -top-40 right-0 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+                    <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
+                    <div className="pointer-events-none absolute top-1/4 left-1/3 h-48 w-48 rounded-full bg-indigo-500/5 blur-3xl" />
+
+                    <div className="relative mx-auto w-full px-5 py-8 md:px-8 md:py-10">
+                        <div className="flex items-center gap-2 mb-2">
+                            <FolderOpen className="h-5 w-5 text-primary" />
+                            <span className="text-sm font-medium text-muted-foreground">Manajemen Kategori</span>
+                        </div>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Kategori Diskusi</h1>
+                                <p className="mt-2 text-sm text-muted-foreground max-w-lg">
+                                    Kelola berbagai kategori topik yang tersedia untuk memudahkan pengelompokan diskusi di forum.
+                                </p>
+                            </div>
+                            <Button
+                                className="bg-[#1548d7] hover:bg-[#1240b8] text-white shadow-md self-start sm:self-auto shrink-0"
+                                onClick={() => setCreateOpen(true)}
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Tambah Kategori
+                            </Button>
+                        </div>
                     </div>
-                    <Button
-                        className="bg-[#1548d7] hover:bg-[#1240b8] text-white gap-2"
-                        onClick={() => setCreateOpen(true)}
-                    >
-                        <Plus className="h-4 w-4" />
-                        Tambah Kategori
-                    </Button>
                 </div>
 
-                {/* Filters */}
-                {/* <Card className="border-0 shadow-md"> */}
-                    <CardContent className="p-4">
+                <div className="flex flex-col gap-6 p-4 md:p-6">
+                    {/* Filters */}
+                    {/* <Card className="border-0 shadow-md"> */}
+                    <CardContent className="p-0 sm:p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -246,195 +261,196 @@ export default function CategoryIndex() {
                             </div>
                         </div>
                     </CardContent>
-                {/* </Card> */}
+                    {/* </Card> */}
 
-                {/* Table */}
-                <Card className="border-0 shadow-md overflow-hidden">
-                    <CardHeader className="sr-only">
-                        <h2>Daftar Kategori</h2>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                                    <TableHead className="w-[60px] text-center">#</TableHead>
-                                    <TableHead>Nama</TableHead>
-                                    <TableHead>Slug</TableHead>
-                                    <TableHead className="text-center">Jumlah Diskusi</TableHead>
-                                    <TableHead>Tanggal Dibuat</TableHead>
-                                    <TableHead className="text-center w-[120px]">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {categories.data.length > 0 ? (
-                                    categories.data.map((cat, index) => (
-                                        <TableRow key={cat.id} className="group">
-                                            <TableCell className="text-center text-muted-foreground text-sm">
-                                                {(categories.meta?.from ?? 1) + index}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2.5">
-                                                    <span className="font-medium">{cat.name}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                                                    {cat.slug}
-                                                </code>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Badge variant="secondary" className="text-xs">
-                                                    {cat.posts_count} diskusi
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-sm text-muted-foreground">
-                                                {formatDate(cat.created_at)}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                                        onClick={() => handleOpenEdit(cat)}
-                                                    >
-                                                        <Pencil className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                        onClick={() => handleDelete(cat.id)}
-                                                        disabled={deleting === cat.id}
-                                                    >
-                                                        {deleting === cat.id ? (
-                                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                        ) : (
-                                                            <Trash2 className="h-3.5 w-3.5" />
-                                                        )}
-                                                    </Button>
-                                                </div>
+                    {/* Table */}
+                    <Card className="border-0 shadow-md overflow-hidden">
+                        <CardHeader className="sr-only">
+                            <h2>Daftar Kategori</h2>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                                        <TableHead className="w-[60px] text-center">#</TableHead>
+                                        <TableHead>Nama</TableHead>
+                                        <TableHead>Slug</TableHead>
+                                        <TableHead className="text-center">Jumlah Diskusi</TableHead>
+                                        <TableHead>Tanggal Dibuat</TableHead>
+                                        <TableHead className="text-center w-[120px]">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {categories.data.length > 0 ? (
+                                        categories.data.map((cat, index) => (
+                                            <TableRow key={cat.id} className="group">
+                                                <TableCell className="text-center text-muted-foreground text-sm">
+                                                    {(categories.meta?.from ?? 1) + index}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2.5">
+                                                        <span className="font-medium">{cat.name}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                                                        {cat.slug}
+                                                    </code>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant="secondary" className="text-xs">
+                                                        {cat.posts_count} diskusi
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-muted-foreground">
+                                                    {formatDate(cat.created_at)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                                            onClick={() => handleOpenEdit(cat)}
+                                                        >
+                                                            <Pencil className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                            onClick={() => handleDelete(cat.id)}
+                                                            disabled={deleting === cat.id}
+                                                        >
+                                                            {deleting === cat.id ? (
+                                                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                            ) : (
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-12">
+                                                <FolderOpen className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
+                                                <p className="text-sm text-muted-foreground">Belum ada kategori</p>
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-12">
-                                            <FolderOpen className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
-                                            <p className="text-sm text-muted-foreground">Belum ada kategori</p>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
 
-                    {/* Pagination */}
-                    {categories.links && categories.links.length > 3 && (
-                        <div className="flex items-center justify-between border-t px-4 py-3">
-                            <p className="text-xs text-muted-foreground">
-                                Menampilkan {categories.meta?.from ?? 0}–{categories.meta?.to ?? 0} dari{' '}
-                                {categories.meta?.total ?? 0}
-                            </p>
-                            <div className="flex items-center gap-1">
-                                {categories.links.map((link, i) => (
-                                    <Button
-                                        key={i}
-                                        variant={link.active ? 'default' : 'outline'}
-                                        size="sm"
-                                        className={`h-8 min-w-8 text-xs ${link.active ? 'bg-[#1548d7] hover:bg-[#1240b8]' : ''}`}
-                                        disabled={!link.url}
-                                        onClick={() => handlePageChange(link.url)}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                        {/* Pagination */}
+                        {categories.links && categories.links.length > 3 && (
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t px-4 py-4">
+                                <p className="text-xs text-muted-foreground text-center sm:text-left">
+                                    Menampilkan {categories.meta?.from ?? 0}–{categories.meta?.to ?? 0} dari{' '}
+                                    {categories.meta?.total ?? 0}
+                                </p>
+                                <div className="flex items-center gap-1">
+                                    {categories.links.map((link, i) => (
+                                        <Button
+                                            key={i}
+                                            variant={link.active ? 'default' : 'outline'}
+                                            size="sm"
+                                            className={`h-8 min-w-8 text-xs ${link.active ? 'bg-[#1548d7] hover:bg-[#1240b8]' : ''}`}
+                                            disabled={!link.url}
+                                            onClick={() => handlePageChange(link.url)}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </Card>
+                </div>
+
+                {/* Create Modal */}
+                <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Tambah Kategori</DialogTitle>
+                            <DialogDescription>Buat kategori baru untuk diskusi forum.</DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleCreate}>
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-name">Nama Kategori</Label>
+                                    <Input
+                                        id="create-name"
+                                        placeholder="Masukkan nama kategori"
+                                        value={createName}
+                                        onChange={(e) => setCreateName(e.target.value)}
+                                        autoFocus
                                     />
-                                ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </Card>
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
+                                    Batal
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    className="bg-[#1548d7] hover:bg-[#1240b8] text-white"
+                                    disabled={submitting || !createName.trim()}
+                                >
+                                    {submitting ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Plus className="mr-2 h-4 w-4" />
+                                    )}
+                                    Simpan
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Edit Modal */}
+                <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Edit Kategori</DialogTitle>
+                            <DialogDescription>Ubah nama kategori yang sudah ada.</DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleUpdate}>
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-name">Nama Kategori</Label>
+                                    <Input
+                                        id="edit-name"
+                                        placeholder="Masukkan nama kategori"
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                        autoFocus
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
+                                    Batal
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    className="bg-[#1548d7] hover:bg-[#1240b8] text-white"
+                                    disabled={submitting || !editName.trim()}
+                                >
+                                    {submitting ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                    )}
+                                    Simpan Perubahan
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
-
-            {/* Create Modal */}
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Tambah Kategori</DialogTitle>
-                        <DialogDescription>Buat kategori baru untuk diskusi forum.</DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleCreate}>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="create-name">Nama Kategori</Label>
-                                <Input
-                                    id="create-name"
-                                    placeholder="Masukkan nama kategori"
-                                    value={createName}
-                                    onChange={(e) => setCreateName(e.target.value)}
-                                    autoFocus
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
-                                Batal
-                            </Button>
-                            <Button
-                                type="submit"
-                                className="bg-[#1548d7] hover:bg-[#1240b8] text-white"
-                                disabled={submitting || !createName.trim()}
-                            >
-                                {submitting ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Plus className="mr-2 h-4 w-4" />
-                                )}
-                                Simpan
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
-
-            {/* Edit Modal */}
-            <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Edit Kategori</DialogTitle>
-                        <DialogDescription>Ubah nama kategori yang sudah ada.</DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleUpdate}>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="edit-name">Nama Kategori</Label>
-                                <Input
-                                    id="edit-name"
-                                    placeholder="Masukkan nama kategori"
-                                    value={editName}
-                                    onChange={(e) => setEditName(e.target.value)}
-                                    autoFocus
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
-                                Batal
-                            </Button>
-                            <Button
-                                type="submit"
-                                className="bg-[#1548d7] hover:bg-[#1240b8] text-white"
-                                disabled={submitting || !editName.trim()}
-                            >
-                                {submitting ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                )}
-                                Simpan
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
         </AppLayout>
     );
 }

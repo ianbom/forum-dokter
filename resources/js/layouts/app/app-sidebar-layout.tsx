@@ -17,7 +17,7 @@ export default function AppSidebarLayout({
                 <DesktopSidebar />
 
                 {/* Main content */}
-                <div className="flex-1 md:ml-[72px] flex flex-col pb-14 md:pb-0">
+                <div className="flex-1 min-w-0 md:ml-[72px] flex flex-col pb-14 md:pb-0">
                     {/* Top bar */}
                     {pageTitle && (
                         <header className="sticky top-0 z-30 flex h-14 items-center justify-center border-b border-border/40 bg-background/80 backdrop-blur-lg overflow-hidden">

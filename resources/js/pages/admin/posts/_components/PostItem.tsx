@@ -1,4 +1,16 @@
+import { router } from '@inertiajs/react';
 import { Calendar, Eye, EyeOff, Flame, MessageCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,10 +23,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BRAND, formatDate, formatViews, getCatColor, getInitials, stripHtml, type Post } from './types';
 
-export function PostItem({ post }: { post: Post }) {
+export function PostItem({ post, canEdit }: { post: Post, canEdit: boolean }) {
     const isTrending = post.views > 2000;
     const initials = getInitials(post.user.name);
     const contentPreview = stripHtml(post.content);
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     return (
         <article className={`group relative border-b border-border/60 last:border-b-0 ${post.is_hidden ? 'opacity-60' : ''}`}>
@@ -85,39 +98,63 @@ export function PostItem({ post }: { post: Post }) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col items-end justify-between shrink-0">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuItem asChild>
-                                <a href={`/posts/${post.id}`}>
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    Lihat Detail
-                                </a>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <a href={`/posts/${post.id}/edit`}>
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Edit
-                                </a>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Hapus
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
+                {canEdit && (
+                    <div className="flex flex-col items-end justify-between shrink-0">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuItem asChild>
+                                    <a href={`/posts/${post.id}/edit`}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Edit
+                                    </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive cursor-pointer"
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        setShowDeleteAlert(true);
+                                    }}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Hapus
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )}
+
             </div>
+
+            {/* Delete Confirmation Alert */}
+            <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Hapus Diskusi</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus diskusi ini? Tindakan ini tidak dapat dibatalkan dan semua data beserta komentar di dalamnya akan terhapus.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => router.delete(`/posts/${post.id}`, { preserveScroll: true })}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Hapus
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </article>
     );
 }

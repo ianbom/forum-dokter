@@ -77,7 +77,7 @@ export default function PostsIndex() {
                             {posts.data.length > 0 ? (
                                 <div className="divide-y-0">
                                     {posts.data.map((post) => (
-                                        <PostItem key={post.id} post={post} />
+                                        <PostItem key={post.id} post={post} canEdit={false} />
                                     ))}
                                 </div>
                             ) : (
@@ -90,6 +90,7 @@ export default function PostsIndex() {
                                     perPage={filters.per_page}
                                     onPageChange={handlePageChange}
                                     onPerPageChange={(val) => applyFilters({ per_page: val })}
+                                    
                                 />
                             )}
                         </div>

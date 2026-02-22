@@ -1,6 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { EditorContent } from '@tiptap/react';
-import { ArrowLeft, Calendar, Clock, Eye, EyeOff, Loader2, MessageCircle, MoreHorizontal, Paperclip, Pencil, Send, Share2, ThumbsUp, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, EyeOff, Loader2, MessageCircle, MoreHorizontal, Paperclip, Pencil, Send, Share2, ThumbsUp, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -121,7 +121,7 @@ export default function PostShow() {
 
                             <div className="flex items-center gap-4 flex-wrap">
                                 {[
-                                    { icon: Eye, label: `${post.views.toLocaleString('id-ID')} views` },
+                                    // { icon: Eye, label: `${post.views.toLocaleString('id-ID')} views` },
                                     { icon: MessageCircle, label: `${commentsCount} komentar` },
                                 ].map((stat) => (
                                     <div key={stat.label} className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full border border-border/50">
@@ -138,7 +138,7 @@ export default function PostShow() {
                     <div className="flex flex-col gap-6 min-w-0">
                         {/* Article Actions + Body */}
                         <CardContent className="p-5 md:p-8">
-                            <div className="flex items-center justify-between mb-6">
+                            {/* <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-2">
                                     <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5"><ThumbsUp className="h-3.5 w-3.5" />Suka</Button>
                                     <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5"><Share2 className="h-3.5 w-3.5" />Share</Button>
@@ -156,8 +156,8 @@ export default function PostShow() {
                                         <DropdownMenuItem className="text-destructive focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" />Hapus</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                            </div>
-                            <Separator className="mb-6" />
+                            </div> */}
+                            {/* <Separator className="mb-6" /> */}
                             <article
                                 className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.8] text-[15px]"
                                 dangerouslySetInnerHTML={{ __html: post.content }}

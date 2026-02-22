@@ -67,22 +67,29 @@ export default function PostCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Buat Diskusi Baru" />
-            <div className="flex flex-col gap-6 p-4 md:p-6">
-                {/* Hero */}
-                <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#1548d7] via-[#1d5aef] to-[#3b6ef5] p-6 md:p-8 text-white shadow-xl">
-                    <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-white/10 blur-2xl" />
-                    <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-                    <div className="relative z-10">
-                        <Button variant="ghost" size="sm" className="mb-4 text-white/70 hover:text-white hover:bg-white/10" asChild>
+            <div className="flex flex-col gap-0">
+                {/* Hero with Subtle Decorations */}
+                <div className="relative overflow-hidden border-b border-border/40 bg-background/80 backdrop-blur-lg">
+                    {/* Decorative background effects */}
+                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]" />
+                    <div className="absolute -top-24 -left-24 h-64 w-64 bg-[#1548d7]/10 dark:bg-[#6b93f5]/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute top-1/2 right-0 -translate-y-1/2 h-48 w-48 bg-indigo-500/10 dark:bg-indigo-400/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-[#1548d7]/20 dark:via-[#6b93f5]/20 to-transparent" />
+
+                    <div className="relative mx-auto w-full max-w-4xl px-4 md:px-6 pt-6 md:pt-8 pb-6">
+                        <Button variant="ghost" size="sm" className="mb-6 text-muted-foreground hover:text-foreground -ml-3 transition-colors" asChild>
                             <a href="/posts"><ArrowLeft className="mr-1.5 h-4 w-4" />Kembali ke Diskusi</a>
                         </Button>
-                        <h1 className="text-xl md:text-2xl font-bold text-white">Buat Diskusi Baru</h1>
-                        <p className="text-sm text-white/60 mt-1">Bagikan pengetahuan dan pengalaman klinis Anda dengan rekan sejawat</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight flex items-center gap-3">
+                            <span className="h-2 w-2 rounded-full bg-[#1548d7] dark:bg-[#6b93f5] shadow-[0_0_10px_rgba(21,72,215,0.6)]" />
+                            Buat Diskusi Baru
+                        </h1>
+                        <p className="text-sm text-muted-foreground mt-2 md:ml-5">Bagikan pengetahuan dan pengalaman klinis Anda dengan rekan sejawat.</p>
                     </div>
                 </div>
 
                 {/* Form */}
-                <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
+                <div className="mx-auto w-full max-w-4xl px-4 md:px-6 py-6 flex flex-col gap-5">
                     {/* Title & Categories */}
                     <CardContent className="p-5 md:p-6 space-y-4">
                         <div>

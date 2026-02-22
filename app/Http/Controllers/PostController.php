@@ -126,4 +126,20 @@ class PostController extends Controller
             ],
         ]);
     }
+
+    public function destroy(Request $request, Post $post): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->id !== $post->user_id && $user->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            $this->postService->delete($post);
+            return redirect()->back()->with('success', 'Diskusi berhasil dihapus.');
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus diskusi.');
+        }
+    }
 }

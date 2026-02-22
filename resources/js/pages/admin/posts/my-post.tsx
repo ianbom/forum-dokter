@@ -62,7 +62,7 @@ export default function MyPostsPage() {
 
                 {posts.data.length > 0 ? (
                     <div className="divide-y-0">
-                        {posts.data.map((post) => <PostItem key={post.id} post={post} />)}
+                        {posts.data.map((post) => <PostItem key={post.id} post={post} canEdit={true} />)}
                     </div>
                 ) : (
                     <PostEmptyState

@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    Bookmark,
     BoxIcon,
     FileText,
     Home,
@@ -26,26 +27,26 @@ import {
 import { useCurrentUrl } from '@/hooks/use-current-url';
 
 const navItems = [
-    { title: 'Dashboard', href: '/dashboard', icon: Home },
+    { title: 'Dashboard', href: '/dashboard', icon: Home, adminOnly: true },
     { title: 'Semua Diskusi', href: '/posts', icon: FileText },
-    { title: 'Postingan Saya', href: '/my-posts', icon: User },
-    { title: 'Kategori', href: '/categories', icon: BoxIcon },
-    { title: 'Users', href: '/users', icon: Users },
+    { title: 'Postingan Saya', href: '/my-posts', icon: Bookmark },
+    { title: 'Kategori', href: '/categories', icon: BoxIcon, adminOnly: true },
+    { title: 'Users', href: '/users', icon: Users, adminOnly: true },
 ];
 
 // Items shown in the mobile bottom bar (max 5, keeping it clean)
 const mobileNavItems = [
-    { title: 'Home', href: '/dashboard', icon: Home },
+    { title: 'Home', href: '/dashboard', icon: Home, adminOnly: true },
     { title: 'Diskusi', href: '/posts', icon: FileText },
     { title: 'Buat', href: '/posts/create', icon: Plus },
-    { title: 'Kategori', href: '/categories', icon: BoxIcon },
-    { title: 'Saya', href: '/my-posts', icon: User },
+    { title: 'Kategori', href: '/categories', icon: BoxIcon, adminOnly: true },
+    { title: 'Saya', href: '/my-posts', icon: Bookmark },
 ];
 
 // ── Desktop: icon-only left rail ───────────────────────────────
 export function DesktopSidebar() {
     const { isCurrentUrl } = useCurrentUrl();
-    const { auth } = usePage<{ auth: { user: { name: string; email: string } } }>().props;
+    const { auth } = usePage<{ auth: { user: { name: string; email: string; role: string } } }>().props;
 
     return (
         <aside className="fixed left-0 top-0 z-40 hidden md:flex h-screen w-[72px] flex-col items-center border-r border-border/40 bg-background py-4">
@@ -56,7 +57,7 @@ export function DesktopSidebar() {
 
             {/* Nav */}
             <nav className="flex flex-1 flex-col items-center gap-1">
-                {navItems.map((item) => (
+                {navItems.filter(item => !item.adminOnly || auth.user.role === 'admin').map((item) => (
                     <Tooltip key={item.href} delayDuration={0}>
                         <TooltipTrigger asChild>
                             <Link
@@ -122,11 +123,11 @@ export function DesktopSidebar() {
 // ── Mobile: bottom tab bar ─────────────────────────────────────
 export function MobileBottomBar() {
     const { isCurrentUrl } = useCurrentUrl();
-    const { auth } = usePage<{ auth: { user: { name: string; email: string } } }>().props;
+    const { auth } = usePage<{ auth: { user: { name: string; email: string; role: string } } }>().props;
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-40 flex md:hidden h-14 items-center justify-around border-t border-border/40 bg-background/95 backdrop-blur-lg">
-            {mobileNavItems.map((item) => {
+            {mobileNavItems.filter(item => !item.adminOnly || auth.user.role === 'admin').map((item) => {
                 const active = isCurrentUrl(item.href);
                 const isCreate = item.href === '/posts/create';
 

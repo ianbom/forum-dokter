@@ -130,6 +130,16 @@ class PostService
         return $this->updatePostAction->handle($post, $data);
     }
 
+    public function delete(Post $post): bool
+    {
+        // Detach relations just in case, though cascade on delete is preferred.
+        $post->categories()->detach();
+        $post->comments()->delete();
+        $post->attachments()->delete();
+        
+        return $post->delete();
+    }
+
     public function uploadImage(UploadedFile $file): string
     {
         $fileName = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))

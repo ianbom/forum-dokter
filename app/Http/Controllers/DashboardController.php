@@ -76,7 +76,11 @@ class DashboardController extends Controller
 
     private function getChartData(): array
     {
-        $startDate = Carbon::now()->subDays(89)->startOfDay();
+        $firstUser = User::min('created_at');
+        $firstPost = Post::min('created_at');
+
+        $minDate = collect([$firstUser, $firstPost])->filter()->min();
+        $startDate = $minDate ? Carbon::parse($minDate)->startOfDay() : Carbon::now()->subDays(30)->startOfDay();
         $endDate = Carbon::now()->endOfDay();
 
         $usersRaw = User::where('created_at', '>=', $startDate)
