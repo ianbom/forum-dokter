@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { Category } from './types';
@@ -94,9 +94,24 @@ export function CategoryTagInput({ value, onChange, suggestions = [], error }: P
                     onChange={(e) => { setInput(e.target.value); setShowSuggestions(true); }}
                     onKeyDown={handleKeyDown}
                     onFocus={() => setShowSuggestions(true)}
-                    placeholder={value.length === 0 ? 'Ketik kategori, tekan Enter...' : 'Tambah...'}
-                    className="flex-1 min-w-[120px] bg-transparent outline-none placeholder:text-muted-foreground/50 text-sm"
+                    placeholder={value.length === 0 ? 'Ketik kategori, tekan Enter / tap +' : 'Tambah...'}
+                    className="flex-1 min-w-[80px] bg-transparent outline-none placeholder:text-muted-foreground/50 text-sm"
+                    enterKeyHint="enter"
                 />
+
+                {input.trim() && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            addTag(input);
+                            inputRef.current?.focus();
+                        }}
+                        className="ml-auto rounded-md p-1 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                        <Plus className="h-3.5 w-3.5" />
+                    </button>
+                )}
             </div>
 
             {/* Autocomplete dropdown */}
