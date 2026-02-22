@@ -8,7 +8,7 @@ export type Post = {
     is_hidden: boolean;
     created_at: string;
     user: { id: number; name: string };
-    category: { id: number; name: string; slug: string };
+    categories: { id: number; name: string; slug: string }[];
     comments_count: number;
 };
 

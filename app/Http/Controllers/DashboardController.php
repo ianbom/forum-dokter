@@ -24,7 +24,7 @@ class DashboardController extends Controller
         $postsThisMonth = Post::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
         $commentsThisMonth = Comment::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
 
-        $recentPosts = Post::with(['user:id,name,profile_photo', 'category:id,name,slug'])
+        $recentPosts = Post::with(['user:id,name,profile_photo', 'categories:id,name,slug'])
             ->withCount('comments')
             ->latest()
             ->take(5)
@@ -40,10 +40,10 @@ class DashboardController extends Controller
                     'name' => $post->user->name,
                     'profile_photo' => $post->user->profile_photo,
                 ] : null,
-                'category' => $post->category ? [
-                    'name' => $post->category->name,
-                    'slug' => $post->category->slug,
-                ] : null,
+                'categories' => $post->categories->map(fn ($cat) => [
+                    'name' => $cat->name,
+                    'slug' => $cat->slug,
+                ]),
             ]);
 
         $topCategories = Category::withCount('posts')

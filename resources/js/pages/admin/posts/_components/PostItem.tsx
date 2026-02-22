@@ -12,7 +12,6 @@ import {
 import { BRAND, formatDate, formatViews, getCatColor, getInitials, stripHtml, type Post } from './types';
 
 export function PostItem({ post }: { post: Post }) {
-    const catColor = getCatColor(post.category.name);
     const isTrending = post.views > 2000;
     const initials = getInitials(post.user.name);
     const contentPreview = stripHtml(post.content);
@@ -23,18 +22,22 @@ export function PostItem({ post }: { post: Post }) {
                 {/* Main content */}
                 <div className="flex-1 min-w-0">
                     {/* Author row */}
-                    <div className="flex items-center gap-2.5 mb-2.5">
+                    <div className="flex items-center gap-2.5 mb-2.5 flex-wrap">
                         <Avatar className="h-7 w-7 ring-1 ring-border shadow-sm">
                             <AvatarFallback className={`${BRAND.bg} text-white text-[9px] font-semibold`}>
                                 {initials}
                             </AvatarFallback>
                         </Avatar>
                         <span className="text-sm font-medium truncate">{post.user.name}</span>
-                        <span className="text-xs text-muted-foreground">in</span>
-                        <Badge className={`${catColor.bg} ${catColor.text} border-0 text-[11px] font-medium gap-1 py-0.5`}>
-                            <span className={`h-1.5 w-1.5 rounded-full ${catColor.dot}`} />
-                            {post.category.name}
-                        </Badge>
+                        {post.categories.map((cat) => {
+                            const catColor = getCatColor(cat.name);
+                            return (
+                                <Badge key={cat.id} className={`${catColor.bg} ${catColor.text} border-0 text-[11px] font-medium gap-1 py-0.5`}>
+                                    <span className={`h-1.5 w-1.5 rounded-full ${catColor.dot}`} />
+                                    {cat.name}
+                                </Badge>
+                            );
+                        })}
                         {post.is_hidden && (
                             <Badge variant="destructive" className="text-[10px] gap-1 py-0.5">
                                 <EyeOff className="h-3 w-3" />

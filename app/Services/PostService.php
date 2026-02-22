@@ -21,7 +21,7 @@ class PostService
 
     public function getPaginated(array $filters): LengthAwarePaginator
     {
-        $query = Post::with(['user', 'category'])->withCount('comments');
+        $query = Post::with(['user', 'categories'])->withCount('comments');
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -32,7 +32,8 @@ class PostService
         }
 
         if (!empty($filters['category'])) {
-            $query->where('category_id', $filters['category']);
+            $catId = $filters['category'];
+            $query->whereHas('categories', fn ($q) => $q->where('categories.id', $catId));
         }
 
         if (!empty($filters['status'])) {
@@ -59,7 +60,7 @@ class PostService
 
     public function getMyPostsPaginated(int $userId, array $filters): LengthAwarePaginator
     {
-        $query = Post::with(['user', 'category'])->withCount('comments')
+        $query = Post::with(['user', 'categories'])->withCount('comments')
             ->where('user_id', $userId);
 
         if (!empty($filters['search'])) {
@@ -68,7 +69,8 @@ class PostService
         }
 
         if (!empty($filters['category'])) {
-            $query->where('category_id', $filters['category']);
+            $catId = $filters['category'];
+            $query->whereHas('categories', fn ($q) => $q->where('categories.id', $catId));
         }
 
         if (!empty($filters['status'])) {
@@ -104,7 +106,7 @@ class PostService
             'user' => function ($query) {
                 $query->withCount(['posts', 'comments']);
             },
-            'category',
+            'categories',
             'attachments',
             'comments' => function ($query) {
                 $query->whereNull('parent_id')
@@ -127,7 +129,7 @@ class PostService
 
     public function getPostForEdit(Post $post): Post
     {
-        return $post->load(['category']);
+        return $post->load(['categories']);
     }
 
     public function store(array $data, array $files = []): Post

@@ -2,8 +2,10 @@
 
 namespace App\Actions\Posts;
 
+use App\Models\Category;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class UpdatePostAction
 {
@@ -11,12 +13,35 @@ class UpdatePostAction
     {
         return DB::transaction(function () use ($post, $data) {
             $post->update([
-                'category_id' => $data['category_id'],
-                'title'       => $data['title'],
-                'content'     => $data['content'],
+                'title'   => $data['title'],
+                'content' => $data['content'],
             ]);
 
-            return $post->fresh(['user', 'category', 'attachments']);
+            $categoryIds = $this->resolveCategories($data['categories']);
+            $post->categories()->sync($categoryIds);
+
+            return $post->fresh(['user', 'categories', 'attachments']);
         });
+    }
+
+    private function resolveCategories(array $names): array
+    {
+        $ids = [];
+
+        foreach ($names as $name) {
+            $name = strtolower(trim($name));
+            if (empty($name)) {
+                continue;
+            }
+
+            $category = Category::firstOrCreate(
+                ['name' => $name],
+                ['slug' => Str::slug($name)],
+            );
+
+            $ids[] = $category->id;
+        }
+
+        return array_unique($ids);
     }
 }

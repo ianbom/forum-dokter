@@ -68,10 +68,10 @@ class PostController extends Controller
 
             $this->postService->store(
                 data: [
-                    'user_id'     => $request->user()->id,
-                    'category_id' => $validated['category_id'],
-                    'title'       => $validated['title'],
-                    'content'     => $validated['content'],
+                    'user_id'    => $request->user()->id,
+                    'categories' => $validated['categories'],
+                    'title'      => $validated['title'],
+                    'content'    => $validated['content'],
                 ],
                 files: $request->file('attachments', []),
             );
@@ -90,9 +90,9 @@ class PostController extends Controller
             $validated = $request->validated();
 
             $this->postService->update($post, [
-                'category_id' => $validated['category_id'],
-                'title'       => $validated['title'],
-                'content'     => $validated['content'],
+                'categories' => $validated['categories'],
+                'title'      => $validated['title'],
+                'content'    => $validated['content'],
             ]);
 
             return redirect()

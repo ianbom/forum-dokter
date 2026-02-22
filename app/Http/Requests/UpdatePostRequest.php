@@ -14,20 +14,23 @@ class UpdatePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id' => ['required', 'exists:categories,id'],
-            'title'       => ['required', 'string', 'max:255'],
-            'content'     => ['required', 'string'],
+            'categories'   => ['required', 'array', 'min:1'],
+            'categories.*' => ['required', 'string', 'max:50'],
+            'title'        => ['required', 'string', 'max:255'],
+            'content'      => ['required', 'string'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'category_id.required' => 'Kategori wajib dipilih.',
-            'category_id.exists'   => 'Kategori tidak valid.',
-            'title.required'       => 'Judul diskusi wajib diisi.',
-            'title.max'            => 'Judul diskusi maksimal 255 karakter.',
-            'content.required'     => 'Konten diskusi wajib diisi.',
+            'categories.required'   => 'Minimal satu kategori wajib diisi.',
+            'categories.min'        => 'Minimal satu kategori wajib diisi.',
+            'categories.*.required' => 'Nama kategori tidak boleh kosong.',
+            'categories.*.max'      => 'Nama kategori maksimal 50 karakter.',
+            'title.required'        => 'Judul diskusi wajib diisi.',
+            'title.max'             => 'Judul diskusi maksimal 255 karakter.',
+            'content.required'      => 'Konten diskusi wajib diisi.',
         ];
     }
 }

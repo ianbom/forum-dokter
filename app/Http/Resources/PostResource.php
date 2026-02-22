@@ -22,11 +22,13 @@ class PostResource extends JsonResource
                 'id'   => $this->user?->id,
                 'name' => $this->user?->name,
             ],
-            'category'        => [
-                'id'   => $this->category?->id,
-                'name' => $this->category?->name,
-                'slug' => $this->category?->slug,
-            ],
+            'categories'      => $this->whenLoaded('categories', fn () =>
+                $this->categories->map(fn ($c) => [
+                    'id'   => $c->id,
+                    'name' => $c->name,
+                    'slug' => $c->slug,
+                ])->values()
+            ),
         ];
     }
 }

@@ -44,7 +44,7 @@ type RecentPost = {
     is_hidden: boolean;
     created_at: string;
     user: { name: string; profile_photo: string | null } | null;
-    category: { name: string; slug: string } | null;
+    categories: { name: string; slug: string }[];
 };
 
 type TopCategory = {
@@ -429,11 +429,13 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
 
-                                            <div className="md:col-span-2 flex items-center">
-                                                {post.category ? (
-                                                    <Badge variant="secondary" className="text-xs truncate max-w-full">
-                                                        {post.category.name}
-                                                    </Badge>
+                                            <div className="md:col-span-2 flex items-center gap-1.5 flex-wrap">
+                                                {post.categories.length > 0 ? (
+                                                    post.categories.map((cat) => (
+                                                        <Badge key={cat.slug} variant="secondary" className="text-[10px] truncate max-w-[80px]">
+                                                            {cat.name}
+                                                        </Badge>
+                                                    ))
                                                 ) : (
                                                     <span className="text-xs text-muted-foreground">—</span>
                                                 )}

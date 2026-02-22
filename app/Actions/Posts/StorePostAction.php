@@ -2,6 +2,7 @@
 
 namespace App\Actions\Posts;
 
+use App\Models\Category;
 use App\Models\Post;
 use App\Models\PostAttachment;
 use Illuminate\Http\UploadedFile;
@@ -15,18 +16,41 @@ class StorePostAction
     {
         return DB::transaction(function () use ($data, $files) {
             $post = Post::create([
-                'user_id'     => $data['user_id'],
-                'category_id' => $data['category_id'],
-                'title'       => $data['title'],
-                'content'     => $data['content'],
+                'user_id' => $data['user_id'],
+                'title'   => $data['title'],
+                'content' => $data['content'],
             ]);
+
+            $categoryIds = $this->resolveCategories($data['categories']);
+            $post->categories()->sync($categoryIds);
 
             if (!empty($files)) {
                 $this->storeAttachments($post, $files);
             }
 
-            return $post->load('attachments');
+            return $post->load(['attachments', 'categories']);
         });
+    }
+
+    private function resolveCategories(array $names): array
+    {
+        $ids = [];
+
+        foreach ($names as $name) {
+            $name = strtolower(trim($name));
+            if (empty($name)) {
+                continue;
+            }
+
+            $category = Category::firstOrCreate(
+                ['name' => $name],
+                ['slug' => Str::slug($name)],
+            );
+
+            $ids[] = $category->id;
+        }
+
+        return array_unique($ids);
     }
 
     private function storeAttachments(Post $post, array $files): void
