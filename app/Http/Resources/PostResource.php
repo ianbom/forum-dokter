@@ -19,8 +19,9 @@ class PostResource extends JsonResource
             'updated_at'      => $this->updated_at->toISOString(),
             'comments_count'  => $this->whenCounted('comments'),
             'user'            => [
-                'id'   => $this->user?->id,
-                'name' => $this->user?->name,
+                'id'            => $this->user?->id,
+                'name'          => $this->user?->name,
+                'profile_photo' => $this->user?->profile_photo,
             ],
             'categories'      => $this->whenLoaded('categories', fn () =>
                 $this->categories->map(fn ($c) => [

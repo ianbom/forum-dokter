@@ -7,7 +7,7 @@ import { PostEmptyState } from './_components/PostEmptyState';
 import { PostFilterBar } from './_components/PostFilterBar';
 import { PostItem } from './_components/PostItem';
 import { PostPagination } from './_components/PostPagination';
-import type { Category, Filters, PaginatedPosts } from './_components/types';
+import type { Filters, PaginatedPosts } from './_components/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -16,12 +16,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type PageProps = {
     posts: PaginatedPosts;
-    categories: Category[];
     filters: Filters;
 };
 
 export default function MyPostsPage() {
-    const { posts, categories, filters } = usePage<PageProps>().props;
+    const { posts, filters } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search);
 
     const applyFilters = useCallback(
@@ -29,8 +28,6 @@ export default function MyPostsPage() {
             const merged = { ...filters, ...newFilters };
             const params: Record<string, string> = {};
             if (merged.search) params.search = merged.search;
-            if (merged.category) params.category = merged.category;
-            if (merged.status) params.status = merged.status;
             if (merged.sort && merged.sort !== 'latest') params.sort = merged.sort;
             if (merged.per_page && merged.per_page !== 12) params.per_page = String(merged.per_page);
             router.get('/my-posts', params, { preserveState: true, preserveScroll: true });
@@ -58,7 +55,6 @@ export default function MyPostsPage() {
                 <PostFilterBar
                     search={search}
                     filters={filters}
-                    categories={categories}
                     onSearchChange={setSearch}
                     onSearchSubmit={handleSearch}
                     onFilterChange={(partial) => applyFilters(partial)}

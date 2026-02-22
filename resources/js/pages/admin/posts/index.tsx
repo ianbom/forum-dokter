@@ -7,7 +7,7 @@ import { PostEmptyState } from './_components/PostEmptyState';
 import { PostFilterBar } from './_components/PostFilterBar';
 import { PostItem } from './_components/PostItem';
 import { PostPagination } from './_components/PostPagination';
-import type { Category, Filters, PaginatedPosts } from './_components/types';
+import type { Filters, PaginatedPosts } from './_components/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -16,13 +16,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type PageProps = {
     posts: PaginatedPosts;
-    categories: Category[];
     filters: Filters;
 };
 
 export default function PostsIndex() {
-    const { posts, categories, filters } = usePage<PageProps>().props;
+    const { posts, filters } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search);
+    console.log(posts);
 
     const applyFilters = useCallback(
         (newFilters: Partial<Filters>) => {
@@ -30,8 +30,6 @@ export default function PostsIndex() {
             const params: Record<string, string> = {};
 
             if (merged.search) params.search = merged.search;
-            if (merged.category) params.category = merged.category;
-            if (merged.status) params.status = merged.status;
             if (merged.sort && merged.sort !== 'latest') params.sort = merged.sort;
             if (merged.per_page && merged.per_page !== 12) params.per_page = String(merged.per_page);
 
@@ -68,7 +66,6 @@ export default function PostsIndex() {
                     onSearchChange={setSearch}
                     onSearchSubmit={handleSearchSubmit}
                     filters={filters}
-                    categories={categories}
                     onFilterChange={applyFilters}
                 />
 

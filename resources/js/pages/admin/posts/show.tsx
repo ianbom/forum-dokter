@@ -2,7 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { EditorContent } from '@tiptap/react';
 import { ArrowLeft, Calendar, Clock, Eye, EyeOff, Loader2, MessageCircle, MoreHorizontal, Paperclip, Pencil, Send, Share2, ThumbsUp, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardHeader } from '@/components/ui/card';
@@ -35,7 +35,7 @@ const BRAND = {
 type PostData = {
     id: number; title: string; content: string; views: number;
     is_hidden: boolean; created_at: string; comments_count: number;
-    user: { id: number; name: string; specialization: string | null; bio: string | null; posts_count: number; comments_count: number };
+    user: { id: number; name: string; specialization: string | null; bio: string | null; profile_photo: string | null; posts_count: number; comments_count: number };
     categories: { id: number; name: string; slug: string }[];
     attachments: Attachment[];
     comments: CommentType[];
@@ -77,45 +77,58 @@ export default function PostShow() {
             <Head title={post.title} />
             <div className="flex flex-col gap-0 p-0">
                 {/* Hero */}
-                <div className="relative overflow-hidden bg-linear-to-br from-primary via-primary to-[#3b6ef5]">
-                    <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/5" />
-                    <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/5" />
-                    <div className="relative mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
-                        <Button variant="ghost" size="sm" className="mb-4 text-white/70 hover:text-white hover:bg-white/10" asChild>
+                <div className="relative overflow-hidden bg-background border-b border-border/60">
+                    {/* Decorative Elements */}
+                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]" />
+                    <div className="pointer-events-none absolute -top-40 right-0 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+                    <div className="pointer-events-none absolute -bottom-40 -left-10 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
+                    <div className="pointer-events-none absolute top-1/4 left-1/3 h-48 w-48 rounded-full bg-indigo-500/5 blur-3xl" />
+
+                    <div className="relative mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-10">
+                        <Button variant="ghost" size="sm" className="mb-6 text-muted-foreground hover:text-foreground -ml-2.5" asChild>
                             <a href="/posts"><ArrowLeft className="mr-1.5 h-4 w-4" />Kembali ke Diskusi</a>
                         </Button>
-                        <div className="flex items-start gap-2 mb-3 flex-wrap">
+
+                        <div className="flex items-start gap-2 mb-4 flex-wrap">
                             {post.categories.map((cat) => (
-                                <Badge key={cat.id} className="bg-white/15 text-white border-white/20 text-xs backdrop-blur-sm">{cat.name}</Badge>
+                                <Badge key={cat.id} variant="secondary" className="font-medium bg-muted text-muted-foreground hover:bg-muted/80">{cat.name}</Badge>
                             ))}
                             {post.is_hidden && (
-                                <Badge className="bg-red-500/30 text-white border-red-300/30 text-xs">
-                                    <EyeOff className="mr-1 h-3 w-3" />Hidden
+                                <Badge variant="destructive" className="opacity-90">
+                                    <EyeOff className="mr-1 h-3 w-3" />Sembunyikan
                                 </Badge>
                             )}
                         </div>
-                        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white leading-snug mb-4 max-w-3xl">{post.title}</h1>
-                        <div className="flex items-center gap-3 mb-5">
-                            <Avatar className="h-10 w-10 ring-2 ring-white/30 shadow-lg">
-                                <AvatarFallback className="bg-white/20 text-white font-semibold text-sm backdrop-blur-sm">{userInitials}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="text-sm font-semibold text-white">{post.user.name}</p>
-                                <div className="flex items-center gap-2 text-xs text-white/60">
-                                    {post.user.specialization && <><span>{post.user.specialization}</span><span>•</span></>}
-                                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(post.created_at)}</span>
+
+                        <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-foreground leading-tight tracking-tight mb-6 max-w-4xl">{post.title}</h1>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-11 w-11 ring-1 ring-border shadow-xs">
+                                    {post.user.profile_photo && (
+                                        <AvatarImage src={`/storage/${post.user.profile_photo}`} alt={post.user.name} className="object-cover" />
+                                    )}
+                                    <AvatarFallback className={`${BRAND.bgLight} ${BRAND.text} ${BRAND.darkBgLight} ${BRAND.darkText} font-semibold text-sm`}>{userInitials}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="font-semibold text-foreground">{post.user.name}</p>
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                                        {post.user.specialization && <><span>{post.user.specialization}</span><span>•</span></>}
+                                        <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(post.created_at)}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                            {[
-                                { icon: Eye, label: `${post.views.toLocaleString('id-ID')} views` },
-                                { icon: MessageCircle, label: `${commentsCount} komentar` },
-                            ].map((stat) => (
-                                <div key={stat.label} className="flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-sm px-3 py-1.5 text-xs text-white/80">
-                                    <stat.icon className="h-3.5 w-3.5" />{stat.label}
-                                </div>
-                            ))}
+
+                            <div className="flex items-center gap-4 flex-wrap">
+                                {[
+                                    { icon: Eye, label: `${post.views.toLocaleString('id-ID')} views` },
+                                    { icon: MessageCircle, label: `${commentsCount} komentar` },
+                                ].map((stat) => (
+                                    <div key={stat.label} className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full border border-border/50">
+                                        <stat.icon className="h-4 w-4" />{stat.label}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -172,9 +185,6 @@ export default function PostShow() {
                         </CardHeader>
                         <CardContent className="p-5 md:px-8 md:pb-6">
                             <div className="flex gap-3 items-start">
-                                <Avatar className="h-9 w-9 shrink-0 ring-2 ring-background shadow-sm mt-0.5">
-                                    <AvatarFallback className={`${BRAND.bg} text-white text-xs font-semibold`}>AD</AvatarFallback>
-                                </Avatar>
                                 <div className="flex-1 space-y-3">
                                     <div className="rounded-xl border bg-muted/20 dark:bg-muted/10 overflow-hidden transition-colors focus-within:border-[#1548d7]/40 focus-within:shadow-sm">
                                         <CommentEditorToolbar editor={commentEditor} />

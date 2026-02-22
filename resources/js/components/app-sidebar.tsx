@@ -11,7 +11,6 @@ import {
     User,
     Users,
 } from 'lucide-react';
-import { useCurrentUrl } from '@/hooks/use-current-url';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,6 +23,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useCurrentUrl } from '@/hooks/use-current-url';
 
 const navItems = [
     { title: 'Dashboard', href: '/dashboard', icon: Home },
@@ -122,12 +122,62 @@ export function DesktopSidebar() {
 // ── Mobile: bottom tab bar ─────────────────────────────────────
 export function MobileBottomBar() {
     const { isCurrentUrl } = useCurrentUrl();
+    const { auth } = usePage<{ auth: { user: { name: string; email: string } } }>().props;
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-40 flex md:hidden h-14 items-center justify-around border-t border-border/40 bg-background/95 backdrop-blur-lg">
             {mobileNavItems.map((item) => {
                 const active = isCurrentUrl(item.href);
                 const isCreate = item.href === '/posts/create';
+
+                if (item.title === 'Saya') {
+                    return (
+                        <DropdownMenu key={item.href}>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'
+                                        }`}
+                                >
+                                    <item.icon
+                                        className={`transition-all duration-200 h-6 w-6 ${active ? 'scale-110' : ''
+                                            }`}
+                                        strokeWidth={active ? 2.5 : 1.8}
+                                    />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="top" align="end" className="w-56 mb-2 mr-2">
+                                {auth?.user && (
+                                    <>
+                                        <div className="px-3 py-2">
+                                            <p className="text-sm font-medium">{auth.user.name}</p>
+                                            <p className="text-xs text-muted-foreground">{auth.user.email}</p>
+                                        </div>
+                                        <DropdownMenuSeparator />
+                                    </>
+                                )}
+                                <DropdownMenuItem asChild>
+                                    <Link href="/my-posts">
+                                        <User className="mr-2 h-4 w-4" />
+                                        Postingan Saya
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/settings">
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        Pengaturan
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <Link href="/logout" method="post" as="button" className="w-full">
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Keluar
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                }
 
                 return (
                     <Link

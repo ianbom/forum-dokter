@@ -21,18 +21,14 @@ class PostController extends Controller
 
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'category', 'status', 'sort', 'per_page']);
+        $filters = $request->only(['search', 'sort', 'per_page']);
 
         $posts = $this->postService->getPaginated($filters);
-        $categories = $this->postService->getCategories();
 
         return Inertia::render('admin/posts/index', [
             'posts'      => PostResource::collection($posts),
-            'categories' => $categories,
             'filters'    => [
                 'search'   => $filters['search'] ?? '',
-                'category' => $filters['category'] ?? '',
-                'status'   => $filters['status'] ?? '',
                 'sort'     => $filters['sort'] ?? 'latest',
                 'per_page' => (int) ($filters['per_page'] ?? 12),
             ],
@@ -116,18 +112,14 @@ class PostController extends Controller
 
     public function myPosts(Request $request): Response
     {
-        $filters = $request->only(['search', 'category', 'status', 'sort', 'per_page']);
+        $filters = $request->only(['search', 'sort', 'per_page']);
 
         $posts = $this->postService->getMyPostsPaginated($request->user()->id, $filters);
-        $categories = $this->postService->getCategories();
 
         return Inertia::render('admin/posts/my-post', [
             'posts'      => PostResource::collection($posts),
-            'categories' => $categories,
             'filters'    => [
                 'search'   => $filters['search'] ?? '',
-                'category' => $filters['category'] ?? '',
-                'status'   => $filters['status'] ?? '',
                 'sort'     => $filters['sort'] ?? 'latest',
                 'per_page' => (int) ($filters['per_page'] ?? 12),
             ],

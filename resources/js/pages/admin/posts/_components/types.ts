@@ -7,7 +7,7 @@ export type Post = {
     views: number;
     is_hidden: boolean;
     created_at: string;
-    user: { id: number; name: string };
+    user: { id: number; name: string; profile_photo?: string | null };
     categories: { id: number; name: string; slug: string }[];
     comments_count: number;
 };

@@ -1,5 +1,5 @@
 import { Calendar, Eye, EyeOff, Flame, MessageCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,9 @@ export function PostItem({ post }: { post: Post }) {
                     {/* Author row */}
                     <div className="flex items-center gap-2.5 mb-2.5 flex-wrap">
                         <Avatar className="h-7 w-7 ring-1 ring-border shadow-sm">
+                            {post.user.profile_photo && (
+                                <AvatarImage src={`/storage/${post.user.profile_photo}`} alt={post.user.name} className="object-cover" />
+                            )}
                             <AvatarFallback className={`${BRAND.bg} text-white text-[9px] font-semibold`}>
                                 {initials}
                             </AvatarFallback>

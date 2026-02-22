@@ -1,3 +1,4 @@
+import type { useEditor } from '@tiptap/react';
 import {
     Bold,
     Heading2,
@@ -15,7 +16,6 @@ import {
 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { Separator } from '@/components/ui/separator';
-import type { useEditor } from '@tiptap/react';
 
 function MiniButton({
     onClick,

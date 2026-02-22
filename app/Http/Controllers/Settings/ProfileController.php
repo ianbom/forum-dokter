@@ -30,15 +30,31 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'specialization' => $validated['specialization'] ?? null,
+            'bio' => $validated['bio'] ?? null,
+        ]);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->profile_photo)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_photo);
+            }
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $user->profile_photo = $path;
+        }
 
-        return to_route('profile.edit');
+        $user->save();
+
+        return redirect()->back()->with('success', 'Profile berhasil diperbarui');
     }
 
     /**

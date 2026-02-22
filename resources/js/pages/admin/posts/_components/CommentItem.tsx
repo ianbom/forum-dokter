@@ -1,7 +1,8 @@
 import { router } from '@inertiajs/react';
+import { EditorContent } from '@tiptap/react';
 import { CornerDownRight, Loader2, MoreHorizontal, Pencil, Reply, Send, ThumbsUp, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +12,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EditorContent } from '@tiptap/react';
 import { AttachmentCard } from './AttachmentCard';
 import type { Attachment } from './AttachmentCard';
 import { CommentEditorToolbar } from './CommentEditorToolbar';
@@ -28,7 +28,7 @@ const BRAND = {
 
 export type CommentType = {
     id: number;
-    user: { id: number; name: string; specialization: string | null };
+    user: { id: number; name: string; specialization: string | null; profile_photo?: string | null };
     content: string;
     created_at: string;
     attachments: Attachment[];
@@ -106,6 +106,9 @@ export function CommentItem({ comment, postId, depth = 0 }: { comment: CommentTy
 
                 <div className="flex gap-3">
                     <Avatar className={`${isNested ? 'h-8 w-8' : 'h-10 w-10'} shrink-0 ring-2 ring-background shadow-sm`}>
+                        {comment.user.profile_photo && (
+                            <AvatarImage src={`/storage/${comment.user.profile_photo}`} alt={comment.user.name} className="object-cover" />
+                        )}
                         <AvatarFallback className={`${BRAND.bg} text-white text-xs font-semibold`}>{initials}</AvatarFallback>
                     </Avatar>
 

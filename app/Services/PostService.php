@@ -27,21 +27,9 @@ class PostService
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"));
+                  ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('categories', fn ($c) => $c->where('name', 'like', "%{$search}%"));
             });
-        }
-
-        if (!empty($filters['category'])) {
-            $catId = $filters['category'];
-            $query->whereHas('categories', fn ($q) => $q->where('categories.id', $catId));
-        }
-
-        if (!empty($filters['status'])) {
-            if ($filters['status'] === 'active') {
-                $query->where('is_hidden', false);
-            } elseif ($filters['status'] === 'hidden') {
-                $query->where('is_hidden', true);
-            }
         }
 
         $sort = $filters['sort'] ?? 'latest';
@@ -65,20 +53,10 @@ class PostService
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where('title', 'like', "%{$search}%");
-        }
-
-        if (!empty($filters['category'])) {
-            $catId = $filters['category'];
-            $query->whereHas('categories', fn ($q) => $q->where('categories.id', $catId));
-        }
-
-        if (!empty($filters['status'])) {
-            if ($filters['status'] === 'active') {
-                $query->where('is_hidden', false);
-            } elseif ($filters['status'] === 'hidden') {
-                $query->where('is_hidden', true);
-            }
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('categories', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+            });
         }
 
         $sort = $filters['sort'] ?? 'latest';

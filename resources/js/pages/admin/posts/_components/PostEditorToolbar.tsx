@@ -1,3 +1,4 @@
+import type { useEditor } from '@tiptap/react';
 import {
     AlignCenter,
     AlignLeft,
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { Separator } from '@/components/ui/separator';
-import type { useEditor } from '@tiptap/react';
 
 export function ToolbarButton({
     onClick,

@@ -1,4 +1,4 @@
-import { Filter, Search, SortAsc } from 'lucide-react';
+import { Search, SortAsc } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -8,27 +8,26 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import type { Category, Filters } from './types';
+import type { Filters } from './types';
 
 type Props = {
     search: string;
     onSearchChange: (value: string) => void;
     onSearchSubmit: () => void;
     filters: Filters;
-    categories: Category[];
     onFilterChange: (partial: Partial<Filters>) => void;
 };
 
-export function PostFilterBar({ search, onSearchChange, onSearchSubmit, filters, categories, onFilterChange }: Props) {
+export function PostFilterBar({ search, onSearchChange, onSearchSubmit, filters, onFilterChange }: Props) {
     return (
         <div className="border-b border-border/60">
             <div className="px-5 py-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="flex flex-row items-center gap-2 sm:gap-3">
                     {/* Search */}
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
-                            placeholder="Cari judul atau penulis..."
+                            placeholder="Cari judul, penulis, atau kategori..."
                             value={search}
                             onChange={(e) => onSearchChange(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && onSearchSubmit()}
@@ -38,46 +37,12 @@ export function PostFilterBar({ search, onSearchChange, onSearchSubmit, filters,
 
                     <Separator orientation="vertical" className="hidden sm:block h-8" />
 
-                    {/* Category */}
-                    <Select
-                        value={filters.category || '_all'}
-                        onValueChange={(val) => onFilterChange({ category: val === '_all' ? '' : val })}
-                    >
-                        <SelectTrigger className="w-full sm:w-44">
-                            <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder="Kategori" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="_all">Semua Kategori</SelectItem>
-                            {categories.map((cat) => (
-                                <SelectItem key={cat.id} value={String(cat.id)}>
-                                    {cat.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-
-                    {/* Status */}
-                    <Select
-                        value={filters.status || 'all'}
-                        onValueChange={(val) => onFilterChange({ status: val === 'all' ? '' : val })}
-                    >
-                        <SelectTrigger className="w-full sm:w-40">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Semua Status</SelectItem>
-                            <SelectItem value="active">Aktif</SelectItem>
-                            <SelectItem value="hidden">Tersembunyi</SelectItem>
-                        </SelectContent>
-                    </Select>
-
                     {/* Sort */}
                     <Select
                         value={filters.sort}
                         onValueChange={(val) => onFilterChange({ sort: val })}
                     >
-                        <SelectTrigger className="w-full sm:w-44">
+                        <SelectTrigger className="w-36 sm:w-44 shrink-0">
                             <SortAsc className="mr-2 h-4 w-4 text-muted-foreground" />
                             <SelectValue placeholder="Urutkan" />
                         </SelectTrigger>

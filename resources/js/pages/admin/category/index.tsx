@@ -211,7 +211,7 @@ export default function CategoryIndex() {
                 </div>
 
                 {/* Filters */}
-                <Card className="border-0 shadow-md">
+                {/* <Card className="border-0 shadow-md"> */}
                     <CardContent className="p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                             <div className="relative flex-1">
@@ -246,7 +246,7 @@ export default function CategoryIndex() {
                             </div>
                         </div>
                     </CardContent>
-                </Card>
+                {/* </Card> */}
 
                 {/* Table */}
                 <Card className="border-0 shadow-md overflow-hidden">
@@ -274,9 +274,6 @@ export default function CategoryIndex() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2.5">
-                                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1548d7]/10 dark:bg-[#6b93f5]/10">
-                                                        <FolderOpen className="h-4 w-4 text-[#1548d7] dark:text-[#6b93f5]" />
-                                                    </div>
                                                     <span className="font-medium">{cat.name}</span>
                                                 </div>
                                             </TableCell>
