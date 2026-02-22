@@ -57,6 +57,42 @@ class PostService
         return $query->paginate($perPage)->withQueryString();
     }
 
+    public function getMyPostsPaginated(int $userId, array $filters): LengthAwarePaginator
+    {
+        $query = Post::with(['user', 'category'])->withCount('comments')
+            ->where('user_id', $userId);
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        if (!empty($filters['category'])) {
+            $query->where('category_id', $filters['category']);
+        }
+
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'active') {
+                $query->where('is_hidden', false);
+            } elseif ($filters['status'] === 'hidden') {
+                $query->where('is_hidden', true);
+            }
+        }
+
+        $sort = $filters['sort'] ?? 'latest';
+        $query = match ($sort) {
+            'oldest'         => $query->oldest(),
+            'most_viewed'    => $query->orderByDesc('views'),
+            'most_commented' => $query->orderByDesc('comments_count'),
+            default          => $query->latest(),
+        };
+
+        $perPage = (int) ($filters['per_page'] ?? 12);
+        $perPage = min(max($perPage, 6), 50);
+
+        return $query->paginate($perPage)->withQueryString();
+    }
+
     public function getCategories(): Collection
     {
         return Category::orderBy('name')->get(['id', 'name', 'slug']);

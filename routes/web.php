@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use Termwind\Components\Raw;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -22,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
     Route::resource('posts', PostController::class);
+    Route::get('my-posts', [PostController::class, 'myPosts'])->name('my-posts');
     Route::resource('comments', CommentController::class);
     Route::resource('categories', CategoryController::class);
 

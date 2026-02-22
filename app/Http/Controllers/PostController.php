@@ -113,4 +113,24 @@ class PostController extends Controller
 
         return response()->json(['url' => $url]);
     }
+
+    public function myPosts(Request $request): Response
+    {
+        $filters = $request->only(['search', 'category', 'status', 'sort', 'per_page']);
+
+        $posts = $this->postService->getMyPostsPaginated($request->user()->id, $filters);
+        $categories = $this->postService->getCategories();
+
+        return Inertia::render('admin/posts/my-post', [
+            'posts'      => PostResource::collection($posts),
+            'categories' => $categories,
+            'filters'    => [
+                'search'   => $filters['search'] ?? '',
+                'category' => $filters['category'] ?? '',
+                'status'   => $filters['status'] ?? '',
+                'sort'     => $filters['sort'] ?? 'latest',
+                'per_page' => (int) ($filters['per_page'] ?? 12),
+            ],
+        ]);
+    }
 }
