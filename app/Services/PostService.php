@@ -78,6 +78,16 @@ class PostService
         return Category::orderBy('name')->get(['id', 'name', 'slug']);
     }
 
+    public function getTrendingPosts(int $limit = 5): Collection
+    {
+        return Post::with(['user:id,name,specialization,profile_photo', 'categories'])
+            ->withCount('comments')
+            ->orderBy('comments_count', 'desc')
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
+
     public function getPostDetail(Post $post): Post
     {
         $post->load([

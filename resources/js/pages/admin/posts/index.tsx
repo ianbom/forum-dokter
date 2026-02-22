@@ -7,7 +7,8 @@ import { PostEmptyState } from './_components/PostEmptyState';
 import { PostFilterBar } from './_components/PostFilterBar';
 import { PostItem } from './_components/PostItem';
 import { PostPagination } from './_components/PostPagination';
-import type { Filters, PaginatedPosts } from './_components/types';
+import { TrendingSidebar } from './_components/TrendingSidebar';
+import type { Filters, PaginatedPosts, Post } from './_components/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -16,13 +17,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type PageProps = {
     posts: PaginatedPosts;
+    trendingPosts: Post[];
     filters: Filters;
 };
 
 export default function PostsIndex() {
-    const { posts, filters } = usePage<PageProps>().props;
+    const { posts, trendingPosts, filters } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search);
-    console.log(posts);
 
     const applyFilters = useCallback(
         (newFilters: Partial<Filters>) => {
@@ -69,23 +70,36 @@ export default function PostsIndex() {
                     onFilterChange={applyFilters}
                 />
 
-                {posts.data.length > 0 ? (
-                    <>
-                        <div className="divide-y-0">
-                            {posts.data.map((post) => (
-                                <PostItem key={post.id} post={post} />
-                            ))}
+                <div className="w-full">
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] items-start">
+                        {/* Feed Column */}
+                        <div className="flex flex-col gap-0 border-r border-border/60">
+                            {posts.data.length > 0 ? (
+                                <div className="divide-y-0">
+                                    {posts.data.map((post) => (
+                                        <PostItem key={post.id} post={post} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <PostEmptyState onReset={handleReset} />
+                            )}
+
+                            {posts.data.length > 0 && (
+                                <PostPagination
+                                    posts={posts}
+                                    perPage={filters.per_page}
+                                    onPageChange={handlePageChange}
+                                    onPerPageChange={(val) => applyFilters({ per_page: val })}
+                                />
+                            )}
                         </div>
-                        <PostPagination
-                            posts={posts}
-                            perPage={filters.per_page}
-                            onPageChange={handlePageChange}
-                            onPerPageChange={(val) => applyFilters({ per_page: val })}
-                        />
-                    </>
-                ) : (
-                    <PostEmptyState onReset={handleReset} />
-                )}
+
+                        {/* Sidebar Column */}
+                        <div className="hidden lg:block sticky top-14">
+                            <TrendingSidebar trendingPosts={trendingPosts} />
+                        </div>
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );

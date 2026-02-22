@@ -26,8 +26,9 @@ class PostController extends Controller
         $posts = $this->postService->getPaginated($filters);
 
         return Inertia::render('admin/posts/index', [
-            'posts'      => PostResource::collection($posts),
-            'filters'    => [
+            'posts'         => PostResource::collection($posts),
+            'trendingPosts' => PostResource::collection($this->postService->getTrendingPosts())->resolve(),
+            'filters'       => [
                 'search'   => $filters['search'] ?? '',
                 'sort'     => $filters['sort'] ?? 'latest',
                 'per_page' => (int) ($filters['per_page'] ?? 12),
