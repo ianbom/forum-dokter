@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCommentRequest;
 use App\Models\Comment;
 use App\Services\CommentService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
@@ -38,6 +39,12 @@ class CommentController extends Controller
 
     public function update(UpdateCommentRequest $request, Comment $comment): RedirectResponse
     {
+        $user = Auth::user();
+
+        if ($user->id !== $comment->user_id && $user->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         try {
             $validated = $request->validated();
 

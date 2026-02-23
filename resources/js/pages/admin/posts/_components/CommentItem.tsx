@@ -124,7 +124,7 @@ export function CommentItem({ comment, postId, depth = 0 }: { comment: CommentTy
                                     )}
                                     <span className="text-[11px] text-muted-foreground">{formatShortDate(comment.created_at)}</span>
                                 </div>
-                                <DropdownMenu>
+                                {/* <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <MoreHorizontal className="h-3.5 w-3.5" />
@@ -137,7 +137,7 @@ export function CommentItem({ comment, postId, depth = 0 }: { comment: CommentTy
                                             <Trash2 className="mr-2 h-4 w-4" />{deleting ? 'Menghapus...' : 'Hapus'}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
-                                </DropdownMenu>
+                                </DropdownMenu> */}
                             </div>
 
                             {editing ? (

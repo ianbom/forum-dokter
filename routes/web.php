@@ -16,18 +16,17 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('categories', CategoryController::class);
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
-
     Route::post('posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
     Route::resource('posts', PostController::class);
     Route::get('my-posts', [PostController::class, 'myPosts'])->name('my-posts');
     Route::resource('comments', CommentController::class);
-    Route::resource('categories', CategoryController::class);
-
-    Route::get('users', [UserController::class, 'index'])->name('users.index');
 });
 
 require __DIR__.'/settings.php';

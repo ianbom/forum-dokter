@@ -10,6 +10,7 @@ use App\Services\PostService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -51,7 +52,13 @@ class PostController extends Controller
     }
 
     public function edit(Post $post): Response
-    {
+    {   
+        $user = Auth::user();
+
+        if ($user->id !== $post->user_id && $user->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         return Inertia::render('admin/posts/edit', [
             'post'       => $this->postService->getPostForEdit($post),
             'categories' => $this->postService->getCategories(),
@@ -83,6 +90,12 @@ class PostController extends Controller
 
     public function update(UpdatePostRequest $request, Post $post): RedirectResponse
     {
+        $user = Auth::user();
+
+        if ($user->id !== $post->user_id && $user->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         try {
             $validated = $request->validated();
 
@@ -127,9 +140,9 @@ class PostController extends Controller
         ]);
     }
 
-    public function destroy(Request $request, Post $post): RedirectResponse
+    public function destroy(Post $post): RedirectResponse
     {
-        $user = $request->user();
+        $user = Auth::user();
 
         if ($user->id !== $post->user_id && $user->role !== 'admin') {
             abort(403, 'Unauthorized action.');
