@@ -48,7 +48,7 @@ class PostController extends Controller
     {   
         $userId = Auth::user()->id;
 
-        if ($userId !== $post->user_id && $userId !== 'admin') {
+        if ($userId !== $post->user_id) {
             $this->postService->addViews($post);
         }
 
@@ -61,7 +61,7 @@ class PostController extends Controller
     {   
         $user = Auth::user();
 
-        if ($user->id !== $post->user_id && $user->role !== 'admin') {
+        if ($user->id !== $post->user_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -98,7 +98,7 @@ class PostController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->id !== $post->user_id && $user->role !== 'admin') {
+        if ($user->id !== $post->user_id) {
             abort(403, 'Unauthorized action.');
         }
 
