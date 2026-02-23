@@ -128,7 +128,7 @@ export default function Welcome({
                         <nav className="flex items-center gap-3">
                             {auth.user ? (
                                 <Link
-                                    href={dashboard()}
+                                    href={'/posts'}
                                     className="inline-flex items-center gap-2 rounded-lg bg-[#1548d7] px-5 py-2 text-sm font-medium text-white shadow-md shadow-blue-500/25 transition-all hover:bg-[#1237b0] hover:shadow-lg hover:shadow-blue-500/30"
                                 >
                                     Dashboard
