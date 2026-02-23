@@ -59,11 +59,11 @@ class PostController extends Controller
 
     public function edit(Post $post): Response
     {   
-        $user = Auth::user();
+        // $user = Auth::user();
 
-        if ($user->id !== $post->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if ($user->id !== $post->user_id) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         return Inertia::render('admin/posts/edit', [
             'post'       => $this->postService->getPostForEdit($post),
@@ -96,11 +96,11 @@ class PostController extends Controller
 
     public function update(UpdatePostRequest $request, Post $post): RedirectResponse
     {
-        $user = Auth::user();
+        // $user = Auth::user();
 
-        if ($user->id !== $post->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if ($user->id !== $post->user_id) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         try {
             $validated = $request->validated();
@@ -148,11 +148,11 @@ class PostController extends Controller
 
     public function destroy(Post $post): RedirectResponse
     {
-        $user = Auth::user();
+        // $user = Auth::user();
 
-        if ($user->id !== $post->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if ($user->id !== $post->user_id) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         try {
             $this->postService->delete($post);
