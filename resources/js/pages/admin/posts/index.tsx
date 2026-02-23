@@ -1,5 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { HeroBanner } from './_components/HeroBanner';
@@ -71,35 +72,41 @@ export default function PostsIndex() {
                 />
 
                 <div className="w-full">
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] items-start">
-                        {/* Feed Column */}
-                        <div className="flex flex-col gap-0 border-r border-border/60">
-                            {posts.data.length > 0 ? (
-                                <div className="divide-y-0">
-                                    {posts.data.map((post) => (
-                                        <PostItem key={post.id} post={post} canEdit={false} />
-                                    ))}
-                                </div>
-                            ) : (
-                                <PostEmptyState onReset={handleReset} />
-                            )}
+                    <Tabs defaultValue="feed" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 lg:hidden mb-4">
+                            <TabsTrigger value="feed">Semua Diskusi</TabsTrigger>
+                            <TabsTrigger value="trending">Trending</TabsTrigger>
+                        </TabsList>
 
-                            {posts.data.length > 0 && (
-                                <PostPagination
-                                    posts={posts}
-                                    perPage={filters.per_page}
-                                    onPageChange={handlePageChange}
-                                    onPerPageChange={(val) => applyFilters({ per_page: val })}
-                                    
-                                />
-                            )}
-                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] items-start gap-0">
+                            {/* Feed Column */}
+                            <TabsContent value="feed" forceMount className="mt-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block border-r-0 lg:border-r border-border/60 pr-0 lg:pr-6">
+                                {posts.data.length > 0 ? (
+                                    <div className="divide-y-0">
+                                        {posts.data.map((post) => (
+                                            <PostItem key={post.id} post={post} canEdit={false} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <PostEmptyState onReset={handleReset} />
+                                )}
 
-                        {/* Sidebar Column */}
-                        <div className="hidden lg:block sticky top-14">
-                            <TrendingSidebar trendingPosts={trendingPosts} />
+                                {posts.data.length > 0 && (
+                                    <PostPagination
+                                        posts={posts}
+                                        perPage={filters.per_page}
+                                        onPageChange={handlePageChange}
+                                        onPerPageChange={(val) => applyFilters({ per_page: val })}
+                                    />
+                                )}
+                            </TabsContent>
+
+                            {/* Sidebar Column */}
+                            <TabsContent value="trending" forceMount className="mt-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block lg:sticky lg:top-14">
+                                <TrendingSidebar trendingPosts={trendingPosts} />
+                            </TabsContent>
                         </div>
-                    </div>
+                    </Tabs>
                 </div>
             </div>
         </AppLayout>

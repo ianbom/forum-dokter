@@ -107,7 +107,7 @@ export default function PostEdit() {
                                 placeholder="Judul diskusi..."
                                 value={title}
                                 onChange={(e) => { setTitle(e.target.value); if (errors.title) setErrors((p) => ({ ...p, title: '' })); }}
-                                className={`border-0 bg-transparent text-xl md:text-2xl font-bold placeholder:text-muted-foreground/40 focus-visible:ring-0 shadow-none px-0 h-auto py-2 ${errors.title ? 'ring-1 ring-destructive rounded-md px-3' : ''}`}
+                                className={`text-xl md:text-2xl font-bold placeholder:text-muted-foreground/40 h-auto py-3 px-4 bg-background ${errors.title ? 'ring-1 ring-destructive border-destructive' : ''}`}
                             />
                             {errors.title && <p className="text-xs text-destructive mt-1">{errors.title}</p>}
                         </div>

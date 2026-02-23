@@ -81,7 +81,6 @@ export default function PostCreate() {
                             <a href="/posts"><ArrowLeft className="mr-1.5 h-4 w-4" />Kembali ke Diskusi</a>
                         </Button>
                         <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight flex items-center gap-3">
-                            <span className="h-2 w-2 rounded-full bg-[#1548d7] dark:bg-[#6b93f5] shadow-[0_0_10px_rgba(21,72,215,0.6)]" />
                             Buat Diskusi Baru
                         </h1>
                         <p className="text-sm text-muted-foreground mt-2 md:ml-5">Bagikan pengetahuan dan pengalaman klinis Anda dengan rekan sejawat.</p>
@@ -97,7 +96,7 @@ export default function PostCreate() {
                                 placeholder="Judul diskusi..."
                                 value={title}
                                 onChange={(e) => { setTitle(e.target.value); if (errors.title) setErrors((p) => ({ ...p, title: '' })); }}
-                                className={`border-0 bg-transparent text-xl md:text-2xl font-bold placeholder:text-muted-foreground/40 focus-visible:ring-0 shadow-none px-0 h-auto py-2 ${errors.title ? 'ring-1 ring-destructive rounded-md px-3' : ''}`}
+                                className={`text-xl md:text-2xl font-bold placeholder:text-muted-foreground/40 h-auto py-3 px-4 bg-background ${errors.title ? 'ring-1 ring-destructive border-destructive' : ''}`}
                             />
                             {errors.title && <p className="text-xs text-destructive mt-1">{errors.title}</p>}
                         </div>

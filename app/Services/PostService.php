@@ -140,6 +140,11 @@ class PostService
         return $post->delete();
     }
 
+    public function addViews(Post $post): void
+    {   
+        $post->increment('views');
+    }
+
     public function uploadImage(UploadedFile $file): string
     {
         $fileName = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))

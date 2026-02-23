@@ -25,6 +25,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import AppLogoIcon from './app-logo-icon';
 
 const navItems = [
     { title: 'Dashboard', href: '/dashboard', icon: Home, adminOnly: true },
@@ -51,8 +52,8 @@ export function DesktopSidebar() {
     return (
         <aside className="fixed left-0 top-0 z-40 hidden md:flex h-screen w-[72px] flex-col items-center border-r border-border/40 bg-background py-4">
             {/* Logo */}
-            <Link href="/dashboard" className="mb-6 flex h-10 w-10 items-center justify-center">
-                <Stethoscope className="h-7 w-7 text-foreground" />
+            <Link href="/" className="mb-6 flex h-14 w-14 items-center justify-center">
+                <AppLogoIcon className="h-20 w-auto object-contain transition-all dark:brightness-0 dark:invert" />
             </Link>
 
             {/* Nav */}

@@ -45,7 +45,13 @@ class PostController extends Controller
     }
 
     public function show(Post $post): Response
-    {
+    {   
+        $userId = Auth::user()->id;
+
+        if ($userId !== $post->user_id && $userId !== 'admin') {
+            $this->postService->addViews($post);
+        }
+
         return Inertia::render('admin/posts/show', [
             'post' => $this->postService->getPostDetail($post),
         ]);
