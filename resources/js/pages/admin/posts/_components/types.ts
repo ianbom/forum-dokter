@@ -91,10 +91,7 @@ export function getInitials(name: string): string {
         .toUpperCase();
 }
 
-export function formatViews(views: number): string {
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}k`;
-    return views.toString();
-}
+
 
 export function formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('id-ID', {

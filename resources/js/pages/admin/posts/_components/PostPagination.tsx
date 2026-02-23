@@ -28,7 +28,7 @@ export function PostPagination({ posts, perPage, onPageChange, onPerPageChange }
                     <span className="font-semibold">{meta.total}</span> diskusi
                 </p>
 
-                {meta.last_page > 1 && (
+                {meta.links && meta.links.length > 0 && (
                     <div className="flex items-center gap-1">
                         {meta.links.map((link, i) => {
                             if (i === 0) {
@@ -67,9 +67,8 @@ export function PostPagination({ posts, perPage, onPageChange, onPerPageChange }
                                     className={`h-9 w-9 ${link.active ? 'bg-[#1548d7] hover:bg-[#1237b0] text-white border-0' : ''}`}
                                     disabled={!link.url}
                                     onClick={() => onPageChange(link.url)}
-                                >
-                                    {link.label}
-                                </Button>
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                />
                             );
                         })}
                     </div>
@@ -80,10 +79,9 @@ export function PostPagination({ posts, perPage, onPageChange, onPerPageChange }
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="6">6 / page</SelectItem>
-                        <SelectItem value="12">12 / page</SelectItem>
-                        <SelectItem value="24">24 / page</SelectItem>
+                        <SelectItem value="10">10 / page</SelectItem>
                         <SelectItem value="50">50 / page</SelectItem>
+                        <SelectItem value="100">100 / page</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

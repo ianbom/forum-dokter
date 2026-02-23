@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { FolderOpen, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderOpen, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { type FormEvent, useCallback, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,19 +53,25 @@ type PaginationLink = {
 type PageProps = {
     categories: {
         data: Category[];
-        links: PaginationLink[];
+        links: {
+            first: string | null;
+            last: string | null;
+            prev: string | null;
+            next: string | null;
+        };
         meta?: {
             current_page: number;
             last_page: number;
             from: number | null;
             to: number | null;
             total: number;
+            links: PaginationLink[];
         };
     };
     filters: {
         search: string;
         sort: string;
-        per_page: number;
+        per_page: number | 'all';
     };
 };
 
@@ -248,16 +254,6 @@ export default function CategoryIndex() {
                                         <SelectItem value="oldest">Terlama</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <Select value={String(filters.per_page)} onValueChange={handlePerPage}>
-                                    <SelectTrigger className="w-[100px]">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="10">10</SelectItem>
-                                        <SelectItem value="25">25</SelectItem>
-                                        <SelectItem value="50">50</SelectItem>
-                                    </SelectContent>
-                                </Select>
                             </div>
                         </div>
                     </CardContent>
@@ -345,27 +341,72 @@ export default function CategoryIndex() {
                         </CardContent>
 
                         {/* Pagination */}
-                        {categories.links && categories.links.length > 3 && (
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t px-4 py-4">
-                                <p className="text-xs text-muted-foreground text-center sm:text-left">
-                                    Menampilkan {categories.meta?.from ?? 0}–{categories.meta?.to ?? 0} dari{' '}
-                                    {categories.meta?.total ?? 0}
-                                </p>
-                                <div className="flex items-center gap-1">
-                                    {categories.links.map((link, i) => (
-                                        <Button
-                                            key={i}
-                                            variant={link.active ? 'default' : 'outline'}
-                                            size="sm"
-                                            className={`h-8 min-w-8 text-xs ${link.active ? 'bg-[#1548d7] hover:bg-[#1240b8]' : ''}`}
-                                            disabled={!link.url}
-                                            onClick={() => handlePageChange(link.url)}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
-                                </div>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t px-4 py-4">
+                            <p className="text-xs text-muted-foreground text-center sm:text-left flex-1">
+                                Menampilkan {categories.meta?.from ?? 0}–{categories.meta?.to ?? 0} dari{' '}
+                                <span className="font-semibold">{categories.meta?.total ?? 0}</span> kategori
+                            </p>
+
+                            <div className="flex items-center justify-center gap-1 flex-1">
+                                {categories.meta?.links &&
+                                    (categories.meta.links.length > 3 || categories.meta.total > 10) &&
+                                    categories.meta.links.map((link, i) => {
+                                        if (i === 0) {
+                                            return (
+                                                <Button
+                                                    key="prev"
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    disabled={!link.url}
+                                                    onClick={() => handlePageChange(link.url)}
+                                                >
+                                                    <ChevronLeft className="h-4 w-4" />
+                                                </Button>
+                                            );
+                                        }
+                                        if (i === (categories.meta?.links.length ?? 0) - 1) {
+                                            return (
+                                                <Button
+                                                    key="next"
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    disabled={!link.url}
+                                                    onClick={() => handlePageChange(link.url)}
+                                                >
+                                                    <ChevronRight className="h-4 w-4" />
+                                                </Button>
+                                            );
+                                        }
+                                        return (
+                                            <Button
+                                                key={i}
+                                                variant={link.active ? 'default' : 'outline'}
+                                                size="sm"
+                                                className={`h-8 min-w-8 text-xs ${link.active ? 'bg-[#1548d7] hover:bg-[#1240b8]' : ''}`}
+                                                disabled={!link.url}
+                                                onClick={() => handlePageChange(link.url)}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        );
+                                    })}
                             </div>
-                        )}
+
+                            <div className="flex items-center justify-end flex-1">
+                                <Select value={String(filters.per_page)} onValueChange={handlePerPage}>
+                                    <SelectTrigger className="w-28">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10 / page</SelectItem>
+                                        <SelectItem value="50">50 / page</SelectItem>
+                                        <SelectItem value="100">100 / page</SelectItem>
+                                        <SelectItem value="all">Semua</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                     </Card>
                 </div>
 

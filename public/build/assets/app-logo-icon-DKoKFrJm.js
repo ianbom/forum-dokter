@@ -1,1 +1,0 @@
-import{c as i,j as n}from"./app-C-L-f7Cv.js";function c(e){const o=i.c(2);let t;return o[0]!==e?(t=n.jsx("img",{...e,src:"/logo-ikatemi.png",alt:"IKATEMI Logo"}),o[0]=e,o[1]=t):t=o[1],t}export{c as A};

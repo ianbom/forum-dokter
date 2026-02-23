@@ -1,6 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { EditorContent } from '@tiptap/react';
-import { ArrowLeft, Calendar, Clock, EyeOff, Loader2, MessageCircle, MoreHorizontal, Paperclip, Pencil, Send, Share2, ThumbsUp, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Eye, EyeOff, Loader2, MessageCircle, MoreHorizontal, Paperclip, Pencil, Send, Share2, ThumbsUp, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -121,7 +121,7 @@ export default function PostShow() {
 
                             <div className="flex items-center gap-4 flex-wrap">
                                 {[
-                                    // { icon: Eye, label: `${post.views.toLocaleString('id-ID')} views` },
+                                    { icon: Eye, label: `${post.views.toLocaleString('id-ID')} views` },
                                     { icon: MessageCircle, label: `${commentsCount} komentar` },
                                 ].map((stat) => (
                                     <div key={stat.label} className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full border border-border/50">

@@ -29,7 +29,7 @@ class CategoryController extends Controller
             'filters'    => [
                 'search'   => $filters['search'] ?? '',
                 'sort'     => $filters['sort'] ?? 'latest',
-                'per_page' => (int) ($filters['per_page'] ?? 10),
+                'per_page' => $filters['per_page'] ?? 10,
             ],
         ]);
     }

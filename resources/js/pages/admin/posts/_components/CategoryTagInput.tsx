@@ -20,7 +20,7 @@ export function CategoryTagInput({ value, onChange, suggestions = [], error }: P
     const addTag = useCallback(
         (tag: string) => {
             const normalized = tag.toLowerCase().trim();
-            if (!normalized || value.includes(normalized)) return;
+            if (!normalized || value.includes(normalized) || value.length >= 5) return;
             onChange([...value, normalized]);
             setInput('');
             setShowSuggestions(false);
@@ -62,11 +62,13 @@ export function CategoryTagInput({ value, onChange, suggestions = [], error }: P
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    const isLimitReached = value.length >= 5;
+
     return (
         <div ref={containerRef} className="relative">
             <div
-                className={`flex flex-wrap items-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 ${error ? 'ring-1 ring-destructive' : 'border-input'}`}
-                onClick={() => inputRef.current?.focus()}
+                className={`flex flex-wrap items-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 ${error ? 'ring-1 ring-destructive' : 'border-input'} ${isLimitReached ? 'bg-muted/30 cursor-not-allowed' : ''}`}
+                onClick={() => { if (!isLimitReached) inputRef.current?.focus(); }}
             >
                 {value.map((tag) => {
                     const color = getCatColor(tag);
@@ -94,12 +96,19 @@ export function CategoryTagInput({ value, onChange, suggestions = [], error }: P
                     onChange={(e) => { setInput(e.target.value); setShowSuggestions(true); }}
                     onKeyDown={handleKeyDown}
                     onFocus={() => setShowSuggestions(true)}
-                    placeholder={value.length === 0 ? 'Ketik kategori, tekan Enter / tap +' : 'Tambah...'}
-                    className="flex-1 min-w-[80px] bg-transparent outline-none placeholder:text-muted-foreground/50 text-sm"
+                    disabled={isLimitReached}
+                    placeholder={
+                        isLimitReached
+                            ? 'Maksimal 5 kategori'
+                            : value.length === 0
+                                ? 'Ketik kategori, tekan Enter / tap +'
+                                : 'Tambah...'
+                    }
+                    className="flex-1 min-w-[80px] bg-transparent outline-none placeholder:text-muted-foreground/50 text-sm disabled:cursor-not-allowed"
                     enterKeyHint="enter"
                 />
 
-                {input.trim() && (
+                {!isLimitReached && input.trim() && (
                     <button
                         type="button"
                         onClick={(e) => {

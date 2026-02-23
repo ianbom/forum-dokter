@@ -87,10 +87,10 @@ export default function PostEdit() {
 
                     <div className="relative mx-auto w-full max-w-4xl px-4 md:px-6 pt-6 md:pt-8 pb-6">
                         <Button variant="ghost" size="sm" className="mb-6 text-muted-foreground hover:text-foreground -ml-3 transition-colors" asChild>
-                            <a href={`/posts/${post.id}`}><ArrowLeft className="mr-1.5 h-4 w-4" />Kembali ke Diskusi</a>
+                            <a href={`/posts`}><ArrowLeft className="mr-1.5 h-4 w-4" />Kembali ke Diskusi</a>
                         </Button>
                         <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight flex items-center gap-3">
-                            <span className="h-2 w-2 rounded-full bg-[#1548d7] dark:bg-[#6b93f5] shadow-[0_0_10px_rgba(21,72,215,0.6)]" />
+                            {/* <span className="h-2 w-2 rounded-full bg-[#1548d7] dark:bg-[#6b93f5] shadow-[0_0_10px_rgba(21,72,215,0.6)]" /> */}
                             Edit Diskusi
                         </h1>
                         <p className="text-sm text-muted-foreground mt-2 md:ml-5">Perbarui konten dan detail diskusi Anda.</p>

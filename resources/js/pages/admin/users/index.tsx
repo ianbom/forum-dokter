@@ -474,10 +474,10 @@ export default function UsersIndex() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="5">5 / hal</SelectItem>
-                                        <SelectItem value="10">10 / hal</SelectItem>
-                                        <SelectItem value="25">25 / hal</SelectItem>
-                                        <SelectItem value="50">50 / hal</SelectItem>
+                                        <SelectItem value="5">5 / page</SelectItem>
+                                        <SelectItem value="10">10 / page</SelectItem>
+                                        <SelectItem value="25">25 / page</SelectItem>
+                                        <SelectItem value="50">50 / page</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

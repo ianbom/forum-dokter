@@ -1,6 +1,6 @@
-import { Flame, MessageCircle } from 'lucide-react';
+import { Flame, Eye } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BRAND, getInitials, type Post } from './types';
 
 export function TrendingSidebar({ trendingPosts }: { trendingPosts: Post[] }) {
@@ -47,7 +47,7 @@ export function TrendingSidebar({ trendingPosts }: { trendingPosts: Post[] }) {
                                         <span className="text-xs text-muted-foreground font-medium truncate max-w-[100px]">{post.user.name}</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
-                                        <span className="flex items-center gap-1"><MessageCircle className="h-3 w-3" />{post.comments_count}</span>
+                                        <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{post.views.toLocaleString('id-ID')}</span>
                                     </div>
                                 </div>
                             </a>

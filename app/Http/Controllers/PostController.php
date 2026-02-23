@@ -32,7 +32,7 @@ class PostController extends Controller
             'filters'       => [
                 'search'   => $filters['search'] ?? '',
                 'sort'     => $filters['sort'] ?? 'latest',
-                'per_page' => (int) ($filters['per_page'] ?? 12),
+                'per_page' => (int) ($filters['per_page'] ?? 10),
             ],
         ]);
     }
@@ -48,8 +48,11 @@ class PostController extends Controller
     {   
         $userId = Auth::user()->id;
 
-        if ($userId !== $post->user_id) {
+        $sessionKey = 'viewed_post_' . $post->id;
+
+        if ($userId !== $post->user_id && !session()->has($sessionKey)) {
             $this->postService->addViews($post);
+            session()->put($sessionKey, true);
         }
 
         return Inertia::render('admin/posts/show', [
@@ -141,7 +144,7 @@ class PostController extends Controller
             'filters'    => [
                 'search'   => $filters['search'] ?? '',
                 'sort'     => $filters['sort'] ?? 'latest',
-                'per_page' => (int) ($filters['per_page'] ?? 12),
+                'per_page' => (int) ($filters['per_page'] ?? 10),
             ],
         ]);
     }

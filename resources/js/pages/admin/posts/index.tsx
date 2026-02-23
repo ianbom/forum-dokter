@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -33,12 +33,22 @@ export default function PostsIndex() {
 
             if (merged.search) params.search = merged.search;
             if (merged.sort && merged.sort !== 'latest') params.sort = merged.sort;
-            if (merged.per_page && merged.per_page !== 12) params.per_page = String(merged.per_page);
+            if (merged.per_page && merged.per_page !== 10) params.per_page = String(merged.per_page);
 
             router.get('/posts', params, { preserveState: true, preserveScroll: true });
         },
         [filters],
     );
+
+    // Debounced search effect
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (search !== filters.search) {
+                applyFilters({ search });
+            }
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [search, filters.search, applyFilters]);
 
     const handleSearchSubmit = useCallback(() => {
         applyFilters({ search });

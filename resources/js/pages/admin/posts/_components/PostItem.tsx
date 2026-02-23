@@ -21,7 +21,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { BRAND, formatDate, formatViews, getCatColor, getInitials, stripHtml, type Post } from './types';
+import { BRAND, formatDate, getCatColor, getInitials, stripHtml, type Post } from './types';
 
 export function PostItem({ post, canEdit }: { post: Post, canEdit: boolean }) {
     const isTrending = post.views > 2000;
@@ -88,7 +88,7 @@ export function PostItem({ post, canEdit }: { post: Post, canEdit: boolean }) {
                         </span>
                         <span className="flex items-center gap-1.5">
                             <Eye className="h-3.5 w-3.5" />
-                            <span className="font-medium">{formatViews(post.views)}</span>
+                            <span className="font-medium">{post.views.toLocaleString('id-ID')}</span>
                         </span>
                         <span className="flex items-center gap-1.5">
                             <MessageCircle className="h-3.5 w-3.5" />

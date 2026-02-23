@@ -40,8 +40,8 @@ class PostService
             default          => $query->latest(),
         };
 
-        $perPage = (int) ($filters['per_page'] ?? 12);
-        $perPage = min(max($perPage, 6), 50);
+        $perPage = (int) ($filters['per_page'] ?? 10);
+        $perPage = min(max($perPage, 10), 100);
 
         return $query->paginate($perPage)->withQueryString();
     }
@@ -67,8 +67,8 @@ class PostService
             default          => $query->latest(),
         };
 
-        $perPage = (int) ($filters['per_page'] ?? 12);
-        $perPage = min(max($perPage, 6), 50);
+        $perPage = (int) ($filters['per_page'] ?? 10);
+        $perPage = min(max($perPage, 10), 100);
 
         return $query->paginate($perPage)->withQueryString();
     }
@@ -82,8 +82,7 @@ class PostService
     {
         return Post::with(['user:id,name,specialization,profile_photo', 'categories'])
             ->withCount('comments')
-            ->orderBy('comments_count', 'desc')
-            ->latest()
+            ->orderBy('views', 'desc')
             ->take($limit)
             ->get();
     }

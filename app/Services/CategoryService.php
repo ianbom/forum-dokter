@@ -27,9 +27,16 @@ class CategoryService
         $sort = $filters['sort'] ?? 'latest';
         $query->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc');
 
-        $perPage = (int) ($filters['per_page'] ?? 10);
+        $perPage = $filters['per_page'] ?? 10;
+        
+        if ($perPage === 'all') {
+            $perPage = $query->count();
+            if ($perPage === 0) {
+                $perPage = 1;
+            }
+        }
 
-        return $query->paginate($perPage)->withQueryString();
+        return $query->paginate((int) $perPage)->withQueryString();
     }
 
     public function store(array $data): Category
