@@ -19,6 +19,10 @@ trait ProfileValidationRules
             'email' => $this->emailRules($userId),
             'specialization' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:1000'],
+            'is_member' => ['nullable', 'boolean'],
+            'dpd_city_id' => ['nullable', 'integer', 'exists:cities,id'],
+            'dpc_city_id' => ['nullable', 'integer', 'exists:cities,id'],
+            'kta' => ['nullable', 'string', 'max:255'],
             'profile_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
         ];
     }

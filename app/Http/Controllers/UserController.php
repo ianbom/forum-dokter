@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,5 +33,15 @@ class UserController extends Controller
                 'per_page' => (int) ($filters['per_page'] ?? 10),
             ],
         ]);
+    }
+
+    public function suspend(User $user): RedirectResponse
+    {
+        $this->userService->toggleSuspend($user);
+
+        return redirect()->back()->with(
+            'success',
+            $user->is_suspended ? "Akun pengguna berhasil ditangguhkan." : "Penangguhan akun dibatalkan."
+        );
     }
 }

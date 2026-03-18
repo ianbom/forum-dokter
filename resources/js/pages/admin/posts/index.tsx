@@ -9,7 +9,7 @@ import { PostFilterBar } from './_components/PostFilterBar';
 import { PostItem } from './_components/PostItem';
 import { PostPagination } from './_components/PostPagination';
 import { TrendingSidebar } from './_components/TrendingSidebar';
-import type { Filters, PaginatedPosts, Post } from './_components/types';
+import type { Category, Filters, PaginatedPosts, Post } from './_components/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -19,12 +19,19 @@ const breadcrumbs: BreadcrumbItem[] = [
 type PageProps = {
     posts: PaginatedPosts;
     trendingPosts: Post[];
+    categories: Category[];
     filters: Filters;
+    auth: {
+        user: {
+            role?: string;
+        };
+    };
 };
 
 export default function PostsIndex() {
-    const { posts, trendingPosts, filters } = usePage<PageProps>().props;
+    const { posts, trendingPosts, categories, filters, auth } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search);
+    const isAdmin = auth.user.role === 'admin';
 
     const applyFilters = useCallback(
         (newFilters: Partial<Filters>) => {
@@ -32,6 +39,7 @@ export default function PostsIndex() {
             const params: Record<string, string> = {};
 
             if (merged.search) params.search = merged.search;
+            if (merged.category) params.category = merged.category;
             if (merged.sort && merged.sort !== 'latest') params.sort = merged.sort;
             if (merged.per_page && merged.per_page !== 10) params.per_page = String(merged.per_page);
 
@@ -78,6 +86,7 @@ export default function PostsIndex() {
                     onSearchChange={setSearch}
                     onSearchSubmit={handleSearchSubmit}
                     filters={filters}
+                    categories={categories}
                     onFilterChange={applyFilters}
                 />
 
@@ -94,7 +103,7 @@ export default function PostsIndex() {
                                 {posts.data.length > 0 ? (
                                     <div className="divide-y-0">
                                         {posts.data.map((post) => (
-                                            <PostItem key={post.id} post={post} canEdit={false} />
+                                            <PostItem key={post.id} post={post} canEdit={false} canDelete={isAdmin} />
                                         ))}
                                     </div>
                                 ) : (

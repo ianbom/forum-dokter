@@ -23,7 +23,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BRAND, formatDate, getCatColor, getInitials, stripHtml, type Post } from './types';
 
-export function PostItem({ post, canEdit }: { post: Post, canEdit: boolean }) {
+type PostItemProps = {
+    post: Post;
+    canEdit: boolean;
+    canDelete?: boolean;
+};
+
+export function PostItem({ post, canEdit, canDelete = false }: PostItemProps) {
     const isTrending = post.views > 2000;
     const initials = getInitials(post.user.name);
     const contentPreview = stripHtml(post.content);
@@ -98,38 +104,50 @@ export function PostItem({ post, canEdit }: { post: Post, canEdit: boolean }) {
                 </div>
 
                 {/* Actions */}
-                {canEdit && (
+                {(canEdit || canDelete) && (
                     <div className="flex flex-col items-end justify-between shrink-0">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 transition-opacity"
-                                >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-44">
-                                <DropdownMenuItem asChild>
-                                    <a href={`/posts/${post.id}/edit`}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Edit
-                                    </a>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive cursor-pointer"
-                                    onSelect={(e) => {
-                                        e.preventDefault();
-                                        setShowDeleteAlert(true);
-                                    }}
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Hapus
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {canEdit ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 transition-opacity"
+                                    >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-44">
+                                    <DropdownMenuItem asChild>
+                                        <a href={`/posts/${post.id}/edit`}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Edit
+                                        </a>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive cursor-pointer"
+                                        onSelect={(e) => {
+                                            e.preventDefault();
+                                            setShowDeleteAlert(true);
+                                        }}
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Hapus
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : canDelete ? (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                aria-label="Hapus postingan"
+                                onClick={() => setShowDeleteAlert(true)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        ) : null}
                     </div>
                 )}
 

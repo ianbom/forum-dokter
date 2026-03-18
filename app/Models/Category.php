@@ -12,7 +12,12 @@ class Category extends Model
 
     protected $fillable = [
         'name',
+        'is_priority',
         'slug',
+    ];
+
+    protected $casts = [
+        'is_priority' => 'boolean',
     ];
 
     public function posts(): BelongsToMany

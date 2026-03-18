@@ -28,7 +28,7 @@ class CategoryService
         $query->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc');
 
         $perPage = $filters['per_page'] ?? 10;
-        
+
         if ($perPage === 'all') {
             $perPage = $query->count();
             if ($perPage === 0) {
@@ -41,11 +41,15 @@ class CategoryService
 
     public function store(array $data): Category
     {
+        $data['is_priority'] = (bool) ($data['is_priority'] ?? false);
+
         return $this->storeCategoryAction->handle($data);
     }
 
     public function update(Category $category, array $data): Category
     {
+        $data['is_priority'] = (bool) ($data['is_priority'] ?? false);
+
         return $this->updateCategoryAction->handle($category, $data);
     }
 

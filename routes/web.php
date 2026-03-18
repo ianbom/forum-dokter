@@ -20,9 +20,10 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('categories', CategoryController::class);
     Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::put('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'not_suspended'])->group(function () {
     Route::post('posts/upload-image', [PostController::class, 'uploadImage'])->name('posts.upload-image');
     Route::resource('posts', PostController::class);
     Route::get('my-posts', [PostController::class, 'myPosts'])->name('my-posts');

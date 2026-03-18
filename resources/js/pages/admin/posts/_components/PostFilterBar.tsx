@@ -8,17 +8,18 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import type { Filters } from './types';
+import type { Category, Filters } from './types';
 
 type Props = {
     search: string;
     onSearchChange: (value: string) => void;
     onSearchSubmit: () => void;
     filters: Filters;
+    categories: Category[];
     onFilterChange: (partial: Partial<Filters>) => void;
 };
 
-export function PostFilterBar({ search, onSearchChange, onSearchSubmit, filters, onFilterChange }: Props) {
+export function PostFilterBar({ search, onSearchChange, onSearchSubmit, filters, categories, onFilterChange }: Props) {
     return (
         <div className="border-b border-border/60">
             <div className="px-5 py-4">
@@ -38,6 +39,23 @@ export function PostFilterBar({ search, onSearchChange, onSearchSubmit, filters,
                     <Separator orientation="vertical" className="hidden sm:block h-8" />
 
                     {/* Sort */}
+                    <Select
+                        value={filters.category || 'all'}
+                        onValueChange={(val) => onFilterChange({ category: val === 'all' ? '' : val })}
+                    >
+                        <SelectTrigger className="w-40 sm:w-52 shrink-0">
+                            <SelectValue placeholder="Kategori" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua kategori</SelectItem>
+                            {categories.map((category) => (
+                                <SelectItem key={category.id} value={String(category.id)}>
+                                    {category.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
                     <Select
                         value={filters.sort}
                         onValueChange={(val) => onFilterChange({ sort: val })}

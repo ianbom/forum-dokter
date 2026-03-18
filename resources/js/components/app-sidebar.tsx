@@ -8,7 +8,6 @@ import {
     Menu,
     Plus,
     Settings,
-    Stethoscope,
     User,
     Users,
 } from 'lucide-react';
@@ -41,7 +40,7 @@ const mobileNavItems = [
     { title: 'Diskusi', href: '/posts', icon: FileText },
     { title: 'Buat', href: '/posts/create', icon: Plus },
     { title: 'Kategori', href: '/categories', icon: BoxIcon, adminOnly: true },
-    { title: 'Saya', href: '/my-posts', icon: Bookmark },
+    { title: 'Saya', href: '/my-posts', icon: Settings },
 ];
 
 // ── Desktop: icon-only left rail ───────────────────────────────

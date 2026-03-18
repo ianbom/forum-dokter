@@ -21,6 +21,11 @@ return new class extends Migration
             $table->string('profile_photo')->nullable();
             $table->text('bio')->nullable();
             $table->enum('role', ['admin', 'user'])->default('user');
+            $table->boolean('is_suspended')->default(false);
+            $table->boolean('is_member')->default(false);
+            $table->foreignId('dpd_city_id')->nullable()->constrained('cities')->cascadeOnDelete();
+            $table->foreignId('dpc_city_id')->nullable()->constrained('cities')->cascadeOnDelete();
+            $table->string('kta')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

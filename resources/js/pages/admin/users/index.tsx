@@ -1,13 +1,16 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import {
+    Ban,
     ChevronLeft,
     ChevronRight,
+    CreditCard,
     MoreHorizontal,
     Pencil,
     Search,
     Shield,
     SortAsc,
     Trash2,
+    Unlock,
     UserPlus,
     Users,
 } from 'lucide-react';
@@ -54,6 +57,11 @@ type User = {
     specialization: string | null;
     bio: string | null;
     role: 'admin' | 'user';
+    is_member: boolean;
+    is_suspended: boolean;
+    kta: string | null;
+    dpd_city: string | null;
+    dpc_city: string | null;
     posts_count: number;
     comments_count: number;
     created_at: string;
@@ -158,6 +166,14 @@ export default function UsersIndex() {
         [],
     );
 
+    const handleSuspendToggle = (userId: number) => {
+        router.put(
+            `/users/${userId}/suspend`,
+            {},
+            { preserveScroll: true, preserveState: true }
+        );
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Kelola Pengguna" />
@@ -238,7 +254,7 @@ export default function UsersIndex() {
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                         <Input
-                                            placeholder="Cari nama, email, spesialisasi..."
+                                            placeholder="Cari nama, email..."
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             onKeyDown={handleKeyDown}
@@ -285,8 +301,10 @@ export default function UsersIndex() {
                                     <TableHeader>
                                         <TableRow className="bg-muted/40 hover:bg-muted/40">
                                             <TableHead className="w-12 pl-6">#</TableHead>
-                                            <TableHead className="min-w-[220px]">Pengguna</TableHead>
-                                            <TableHead className="min-w-[160px]">Spesialisasi</TableHead>
+                                            <TableHead className="min-w-[200px]">Pengguna</TableHead>
+                                            {/* <TableHead className="min-w-[150px]">Spesialisasi</TableHead> */}
+                                            <TableHead className="min-w-[130px]">Status / KTA</TableHead>
+                                            <TableHead className="min-w-[150px]">Wilayah</TableHead>
                                             <TableHead className="min-w-[100px] text-center">Role</TableHead>
                                             <TableHead className="min-w-[110px]">Bergabung</TableHead>
                                             <TableHead className="w-12 pr-6 text-right">Aksi</TableHead>
@@ -326,7 +344,7 @@ export default function UsersIndex() {
                                                     </TableCell>
 
                                                     {/* Specialization */}
-                                                    <TableCell>
+                                                    {/* <TableCell>
                                                         {user.specialization ? (
                                                             <Badge
                                                                 variant="secondary"
@@ -338,6 +356,46 @@ export default function UsersIndex() {
                                                             <span className="text-xs text-muted-foreground italic">
                                                                 Belum diisi
                                                             </span>
+                                                        )}
+                                                    </TableCell> */}
+
+                                                    {/* Status / KTA */}
+                                                    <TableCell>
+                                                        <div className="flex flex-col items-start gap-1">
+                                                            <div className="flex gap-1">
+                                                                {user.is_suspended && (
+                                                                    <Badge variant="destructive" className="text-[10px] px-1.5 h-4">
+                                                                        Suspended
+                                                                    </Badge>
+                                                                )}
+                                                                {user.is_member ? (
+                                                                    <Badge className="bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-300 border-0 text-[10px] px-1.5 h-4">
+                                                                        Member
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <Badge variant="outline" className="text-muted-foreground text-[10px] px-1.5 h-4">
+                                                                        Non-Member
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            {user.kta && (
+                                                                <div className="text-xs mt-0.5 text-muted-foreground flex items-center gap-1">
+                                                                    <CreditCard className="h-3 w-3" />
+                                                                    {user.kta}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+
+                                                    {/* Wilayah */}
+                                                    <TableCell>
+                                                        {(user.dpd_city || user.dpc_city) ? (
+                                                            <div className="text-xs space-y-0.5 mt-0.5">
+                                                                {user.dpd_city && <div className="text-muted-foreground"><span className="font-medium text-foreground">DPD:</span> {user.dpd_city}</div>}
+                                                                {user.dpc_city && <div className="text-muted-foreground"><span className="font-medium text-foreground">DPC:</span> {user.dpc_city}</div>}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-xs text-muted-foreground italic">-</span>
                                                         )}
                                                     </TableCell>
 
@@ -377,7 +435,7 @@ export default function UsersIndex() {
                                                                 </Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end" className="w-44">
-                                                                <DropdownMenuItem>
+                                                                {/* <DropdownMenuItem>
                                                                     <Pencil className="mr-2 h-4 w-4" />
                                                                     Edit Profil
                                                                 </DropdownMenuItem>
@@ -385,11 +443,18 @@ export default function UsersIndex() {
                                                                     <Shield className="mr-2 h-4 w-4" />
                                                                     Ubah Role
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                                                                <DropdownMenuSeparator /> */}
+                                                                <DropdownMenuItem 
+                                                                    onClick={() => handleSuspendToggle(user.id)}
+                                                                    className={user.is_suspended ? "text-emerald-600 focus:text-emerald-600" : "text-amber-600 focus:text-amber-600"}
+                                                                >
+                                                                    {user.is_suspended ? <Unlock className="mr-2 h-4 w-4" /> : <Ban className="mr-2 h-4 w-4" />}
+                                                                    {user.is_suspended ? "Buka Suspend" : "Suspend User"}
+                                                                </DropdownMenuItem>
+                                                                {/* <DropdownMenuItem className="text-destructive focus:text-destructive">
                                                                     <Trash2 className="mr-2 h-4 w-4" />
                                                                     Hapus Akun
-                                                                </DropdownMenuItem>
+                                                                </DropdownMenuItem> */}
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </TableCell>

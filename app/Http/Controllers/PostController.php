@@ -22,15 +22,17 @@ class PostController extends Controller
 
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'sort', 'per_page']);
+        $filters = $request->only(['search', 'category', 'sort', 'per_page']);
 
         $posts = $this->postService->getPaginated($filters);
 
         return Inertia::render('admin/posts/index', [
             'posts'         => PostResource::collection($posts),
             'trendingPosts' => PostResource::collection($this->postService->getTrendingPosts())->resolve(),
+            'categories'    => $this->postService->getPriorityCategories(),
             'filters'       => [
                 'search'   => $filters['search'] ?? '',
+                'category' => (string) ($filters['category'] ?? ''),
                 'sort'     => $filters['sort'] ?? 'latest',
                 'per_page' => (int) ($filters['per_page'] ?? 10),
             ],
@@ -45,7 +47,7 @@ class PostController extends Controller
     }
 
     public function show(Post $post): Response
-    {   
+    {
         $userId = Auth::user()->id;
 
         $sessionKey = 'viewed_post_' . $post->id;
@@ -61,7 +63,7 @@ class PostController extends Controller
     }
 
     public function edit(Post $post): Response
-    {   
+    {
         // $user = Auth::user();
 
         // if ($user->id !== $post->user_id) {
@@ -135,14 +137,16 @@ class PostController extends Controller
 
     public function myPosts(Request $request): Response
     {
-        $filters = $request->only(['search', 'sort', 'per_page']);
+        $filters = $request->only(['search', 'category', 'sort', 'per_page']);
 
         $posts = $this->postService->getMyPostsPaginated($request->user()->id, $filters);
 
         return Inertia::render('admin/posts/my-post', [
             'posts'      => PostResource::collection($posts),
+            'categories' => $this->postService->getPriorityCategories(),
             'filters'    => [
                 'search'   => $filters['search'] ?? '',
+                'category' => (string) ($filters['category'] ?? ''),
                 'sort'     => $filters['sort'] ?? 'latest',
                 'per_page' => (int) ($filters['per_page'] ?? 10),
             ],
@@ -151,11 +155,11 @@ class PostController extends Controller
 
     public function destroy(Post $post): RedirectResponse
     {
-        // $user = Auth::user();
+        $user = Auth::user();
 
-        // if ($user->id !== $post->user_id) {
-        //     abort(403, 'Unauthorized action.');
-        // }
+        if (! $user || $user->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
 
         try {
             $this->postService->delete($post);

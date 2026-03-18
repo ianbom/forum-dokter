@@ -23,6 +23,20 @@ class PostService
     {
         $query = Post::with(['user', 'categories'])->withCount('comments');
 
+        $categoryFilter = $filters['category'] ?? null;
+
+        if (!empty($categoryFilter)) {
+            $query->whereHas('categories', function ($q) use ($categoryFilter) {
+                if (is_numeric($categoryFilter)) {
+                    $q->where('categories.id', (int) $categoryFilter);
+
+                    return;
+                }
+
+                $q->where('slug', $categoryFilter);
+            });
+        }
+
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
@@ -51,6 +65,20 @@ class PostService
         $query = Post::with(['user', 'categories'])->withCount('comments')
             ->where('user_id', $userId);
 
+        $categoryFilter = $filters['category'] ?? null;
+
+        if (!empty($categoryFilter)) {
+            $query->whereHas('categories', function ($q) use ($categoryFilter) {
+                if (is_numeric($categoryFilter)) {
+                    $q->where('categories.id', (int) $categoryFilter);
+
+                    return;
+                }
+
+                $q->where('slug', $categoryFilter);
+            });
+        }
+
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
@@ -76,6 +104,14 @@ class PostService
     public function getCategories(): Collection
     {
         return Category::orderBy('name')->get(['id', 'name', 'slug']);
+    }
+
+    public function getPriorityCategories(): Collection
+    {
+        return Category::query()
+            ->where('is_priority', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
     }
 
     public function getTrendingPosts(int $limit = 5): Collection
@@ -135,12 +171,12 @@ class PostService
         $post->categories()->detach();
         $post->comments()->delete();
         $post->attachments()->delete();
-        
+
         return $post->delete();
     }
 
     public function addViews(Post $post): void
-    {   
+    {
         $post->increment('views');
     }
 

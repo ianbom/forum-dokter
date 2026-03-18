@@ -12,6 +12,7 @@ class CategoryResource extends JsonResource
         return [
             'id'          => $this->id,
             'name'        => $this->name,
+            'is_priority' => $this->is_priority,
             'slug'        => $this->slug,
             'posts_count' => $this->whenCounted('posts'),
             'created_at'  => $this->created_at,

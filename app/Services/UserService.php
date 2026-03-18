@@ -9,14 +9,13 @@ class UserService
 {
     public function getPaginated(array $filters): LengthAwarePaginator
     {
-        $query = User::withCount(['posts', 'comments']);
+        $query = User::with(['dpdCity', 'dpcCity'])->withCount(['posts', 'comments']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('specialization', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -46,5 +45,11 @@ class UserService
             'admin' => User::where('role', 'admin')->count(),
             'user'  => User::where('role', 'user')->count(),
         ];
+    }
+
+    public function toggleSuspend(User $user): void
+    {
+        $user->is_suspended = !$user->is_suspended;
+        $user->save();
     }
 }

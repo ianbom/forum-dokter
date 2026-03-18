@@ -41,6 +41,7 @@ class CategoryController extends Controller
 
             $this->categoryService->store([
                 'name' => $validated['name'],
+                'is_priority' => (bool) ($validated['is_priority'] ?? false),
             ]);
 
             return redirect()
@@ -60,6 +61,7 @@ class CategoryController extends Controller
 
             $this->categoryService->update($category, [
                 'name' => $validated['name'],
+                'is_priority' => (bool) ($validated['is_priority'] ?? false),
             ]);
 
             return redirect()

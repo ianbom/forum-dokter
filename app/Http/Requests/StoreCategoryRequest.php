@@ -15,6 +15,7 @@ class StoreCategoryRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
+            'is_priority' => ['required', 'boolean'],
         ];
     }
 
@@ -24,6 +25,8 @@ class StoreCategoryRequest extends FormRequest
             'name.required' => 'Nama kategori wajib diisi.',
             'name.max'      => 'Nama kategori maksimal 255 karakter.',
             'name.unique'   => 'Nama kategori sudah digunakan.',
+            'is_priority.required' => 'Status prioritas wajib dipilih.',
+            'is_priority.boolean'  => 'Status prioritas tidak valid.',
         ];
     }
 }

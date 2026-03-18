@@ -13,6 +13,7 @@ class UpdateCategoryAction
         return DB::transaction(function () use ($category, $data) {
             $category->update([
                 'name' => $data['name'],
+                'is_priority' => (bool) ($data['is_priority'] ?? false),
                 'slug' => Str::slug($data['name']),
             ]);
 

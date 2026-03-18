@@ -39,6 +39,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 type Category = {
     id: number;
     name: string;
+    is_priority: boolean;
     slug: string;
     posts_count: number;
     created_at: string | null;
@@ -92,7 +93,9 @@ export default function CategoryIndex() {
     const [editOpen, setEditOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [createName, setCreateName] = useState('');
+    const [createIsPriority, setCreateIsPriority] = useState(false);
     const [editName, setEditName] = useState('');
+    const [editIsPriority, setEditIsPriority] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [deleting, setDeleting] = useState<number | null>(null);
 
@@ -138,23 +141,28 @@ export default function CategoryIndex() {
             setSubmitting(true);
             router.post(
                 '/categories',
-                { name: createName.trim() },
+                {
+                    name: createName.trim(),
+                    is_priority: createIsPriority,
+                },
                 {
                     preserveScroll: true,
                     onSuccess: () => {
                         setCreateOpen(false);
                         setCreateName('');
+                        setCreateIsPriority(false);
                     },
                     onFinish: () => setSubmitting(false),
                 },
             );
         },
-        [createName],
+        [createName, createIsPriority],
     );
 
     const handleOpenEdit = useCallback((cat: Category) => {
         setEditingCategory(cat);
         setEditName(cat.name);
+        setEditIsPriority(cat.is_priority);
         setEditOpen(true);
     }, []);
 
@@ -166,19 +174,23 @@ export default function CategoryIndex() {
             setSubmitting(true);
             router.put(
                 `/categories/${editingCategory.id}`,
-                { name: editName.trim() },
+                {
+                    name: editName.trim(),
+                    is_priority: editIsPriority,
+                },
                 {
                     preserveScroll: true,
                     onSuccess: () => {
                         setEditOpen(false);
                         setEditingCategory(null);
                         setEditName('');
+                        setEditIsPriority(false);
                     },
                     onFinish: () => setSubmitting(false),
                 },
             );
         },
-        [editingCategory, editName],
+        [editingCategory, editName, editIsPriority],
     );
 
     const handleDelete = useCallback((id: number) => {
@@ -271,6 +283,7 @@ export default function CategoryIndex() {
                                         <TableHead className="w-[60px] text-center">#</TableHead>
                                         <TableHead>Nama</TableHead>
                                         <TableHead>Slug</TableHead>
+                                        <TableHead className="text-center">Prioritas</TableHead>
                                         <TableHead className="text-center">Jumlah Diskusi</TableHead>
                                         <TableHead>Tanggal Dibuat</TableHead>
                                         <TableHead className="text-center w-[120px]">Aksi</TableHead>
@@ -292,6 +305,11 @@ export default function CategoryIndex() {
                                                     <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                                                         {cat.slug}
                                                     </code>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant={cat.is_priority ? 'default' : 'outline'} className="text-xs">
+                                                        {cat.is_priority ? 'Prioritas' : '-'}
+                                                    </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <Badge variant="secondary" className="text-xs">
@@ -330,7 +348,7 @@ export default function CategoryIndex() {
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-12">
+                                            <TableCell colSpan={7} className="text-center py-12">
                                                 <FolderOpen className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
                                                 <p className="text-sm text-muted-foreground">Belum ada kategori</p>
                                             </TableCell>
@@ -429,6 +447,21 @@ export default function CategoryIndex() {
                                         autoFocus
                                     />
                                 </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-is-priority">Kategori Prioritas</Label>
+                                    <Select
+                                        value={createIsPriority ? '1' : '0'}
+                                        onValueChange={(value) => setCreateIsPriority(value === '1')}
+                                    >
+                                        <SelectTrigger id="create-is-priority">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0">Tidak</SelectItem>
+                                            <SelectItem value="1">Ya</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                             <DialogFooter>
                                 <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
@@ -469,6 +502,21 @@ export default function CategoryIndex() {
                                         onChange={(e) => setEditName(e.target.value)}
                                         autoFocus
                                     />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-is-priority">Kategori Prioritas</Label>
+                                    <Select
+                                        value={editIsPriority ? '1' : '0'}
+                                        onValueChange={(value) => setEditIsPriority(value === '1')}
+                                    >
+                                        <SelectTrigger id="edit-is-priority">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0">Tidak</SelectItem>
+                                            <SelectItem value="1">Ya</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                             <DialogFooter>
